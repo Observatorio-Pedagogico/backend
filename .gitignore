@@ -1,6 +1,10 @@
 HELP.md
 target/
+<<<<<<< HEAD
 wrapper/
+=======
+.mvn/
+>>>>>>> task/01
 mvnw
 mvnw.cmd
 !.mvn/wrapper/maven-wrapper.jar

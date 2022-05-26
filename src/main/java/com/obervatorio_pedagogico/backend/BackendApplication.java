@@ -1,13 +1,13 @@
-package com.observatorio_pedagogico.observatorio_pedagogico;
+package com.obervatorio_pedagogico.backend;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class ObservatorioPedagogicoApplication {
+public class BackendApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ObservatorioPedagogicoApplication.class, args);
+		SpringApplication.run(BackendApplication.class, args);
 	}
 
 }

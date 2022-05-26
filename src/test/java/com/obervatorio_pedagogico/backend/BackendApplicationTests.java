@@ -1,10 +1,10 @@
-package com.observatorio_pedagogico.observatorio_pedagogico;
+package com.obervatorio_pedagogico.backend;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class ObservatorioPedagogicoApplicationTests {
+class BackendApplicationTests {
 
 	@Test
 	void contextLoads() {
