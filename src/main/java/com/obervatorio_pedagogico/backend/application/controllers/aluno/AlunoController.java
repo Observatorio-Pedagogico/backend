@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.application.controllers;
+package com.obervatorio_pedagogico.backend.application.controllers.aluno;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
