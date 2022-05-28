@@ -4,7 +4,11 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
+import javax.persistence.OneToOne;
+
+import com.obervatorio_pedagogico.backend.domain.model.endereco.EnderecoModel;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -32,6 +36,10 @@ public abstract class UsuarioModel {
 
     @Column(name = "sexo")
     private Sexo sexo;
+
+    @OneToOne
+    @JoinColumn(name = "id_endereco")
+    private EnderecoModel endereco;
 
     public enum Sexo {
         MASCULINO, FEMININO

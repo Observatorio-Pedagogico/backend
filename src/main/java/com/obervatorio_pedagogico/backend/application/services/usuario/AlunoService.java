@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.application.services;
+package com.obervatorio_pedagogico.backend.application.services.usuario;
 
 import org.springframework.stereotype.Service;
 

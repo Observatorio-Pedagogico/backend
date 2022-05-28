@@ -2,6 +2,9 @@ package com.obervatorio_pedagogico.backend.domain.model.endereco;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 import lombok.AllArgsConstructor;
@@ -17,6 +20,11 @@ import lombok.Setter;
 @Table(name = "t_endereco")
 public class EnderecoModel {
     
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id",nullable = false)
+    private Long id;
+
     @Column(name = "logradouro")
     private String logradouro;
 

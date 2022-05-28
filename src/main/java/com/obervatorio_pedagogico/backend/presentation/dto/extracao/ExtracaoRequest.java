@@ -4,8 +4,6 @@ import java.time.LocalDateTime;
 
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoModel.Status;
 
-import org.springframework.web.multipart.MultipartFile;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,5 +25,5 @@ public class ExtracaoRequest {
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private MultipartFile arquivo;
+    private Arquivo arquivo;
 }
