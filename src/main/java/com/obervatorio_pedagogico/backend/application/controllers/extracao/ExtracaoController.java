@@ -27,7 +27,7 @@ public class ExtracaoController {
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest) {
-        ExtracaoModel extracaoModel = extracaoService.enviar(extracaoRequest);
+        ExtracaoModel extracaoModel = extracaoService.cadastrar(extracaoRequest);
         ExtracaoResponse extracaoResponse = modelMapperService.convert(extracaoModel, ExtracaoResponse.class);
         return responseService.create(extracaoResponse);
     }
