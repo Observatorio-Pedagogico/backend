@@ -1,7 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.controllers.extracao;
 
 import com.obervatorio_pedagogico.backend.application.services.extracao.ExtracaoService;
-import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoModel;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
@@ -27,7 +27,7 @@ public class ExtracaoController {
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest) {
-        ExtracaoModel extracaoModel = extracaoService.cadastrar(extracaoRequest);
+        Extracao extracaoModel = extracaoService.cadastrar(extracaoRequest);
         ExtracaoResponse extracaoResponse = modelMapperService.convert(extracaoModel, ExtracaoResponse.class);
         return responseService.create(extracaoResponse);
     }

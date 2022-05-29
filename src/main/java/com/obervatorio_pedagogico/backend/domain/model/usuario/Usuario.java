@@ -18,18 +18,18 @@ import lombok.Setter;
 @Setter
 @EqualsAndHashCode
 @MappedSuperclass
-public abstract class UsuarioModel {
+public abstract class Usuario {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
+
+    @Column(name = "matricula", nullable = false)
+    protected String matricula;
 
     @Column(name = "email")
     protected String email;
-
-    @Column(name = "matricula")
-    protected String matricula;
 
     @Column(name = "nome")
     protected String nome;

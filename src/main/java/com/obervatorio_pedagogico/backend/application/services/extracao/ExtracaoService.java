@@ -1,15 +1,12 @@
 package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
-
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
-import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoModel;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.AlunoModel;
+import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoEncontradoException;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.Arquivo;
@@ -33,16 +30,15 @@ public class ExtracaoService {
 
     private final ModelMapperService modelMapperService;
     
-    public ExtracaoModel cadastrar(ExtracaoRequest extracaoRequest) {
-        processar(extracaoRequest.getArquivo());
-        ExtracaoModel extracao = modelMapperService.convert(extracaoRequest, ExtracaoModel.class);
+    public Extracao cadastrar(ExtracaoRequest extracaoRequest) {
+        Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
+        processar(extracao, extracaoRequest.getArquivo());
         return extracaoRepository.save(extracao);
     }
 
-    public void processar(Arquivo arquivo) {
+    public void processar(Extracao extracao, Arquivo arquivo) {
         validarArquivo(arquivo);
-        List<AlunoModel> listaAlunos = lerArquivo(arquivo);
-        alunoService.salvar(listaAlunos);
+        lerArquivo(extracao, arquivo);
     }
     
     private void validarFormatoArquivo(Arquivo arquivo) {
@@ -54,23 +50,20 @@ public class ExtracaoService {
         validarFormatoArquivo(arquivo);
     }
 
-    private List<AlunoModel> lerArquivo(Arquivo arquivo) {
-        List<AlunoModel> listaAlunos = Collections.emptyList();
+    private void lerArquivo(Extracao extracao, Arquivo arquivo) {
         try {
             Workbook workbook = WorkbookFactory.create(arquivo.getConteudo().getInputStream());
             Sheet sheet = workbook.getSheetAt(0);
 
-            listaAlunos = obterAlunosBySheet(sheet);
+            cadastrarAlunosNaExtracaoAlunosBySheet(extracao, sheet);
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return listaAlunos;
     }
 
-    private List<AlunoModel> obterAlunosBySheet(Sheet sheet) {
+    private void cadastrarAlunosNaExtracaoAlunosBySheet(Extracao extracao, Sheet sheet) {
         Iterator<Row> linhasInterator = sheet.iterator();
         Row linha;
-        List<AlunoModel> listaAlunos = new ArrayList<AlunoModel>();
 
         while(linhasInterator.hasNext()) {
             linha = linhasInterator.next();
@@ -78,13 +71,18 @@ public class ExtracaoService {
             if (linha.getRowNum() == 0 || linha.getCell(0).getStringCellValue().isEmpty())
                 continue;
 
-            AlunoModel aluno = new AlunoModel();
-            aluno.setMatricula(linha.getCell(1).getStringCellValue());
-            aluno.setNome(linha.getCell(2).getStringCellValue());
+            Aluno aluno = null;
+            try {
+                aluno = alunoService.buscarPorMatricula(linha.getCell(1).getStringCellValue());
+            } catch (UsuarioNaoEncontradoException usuarioNaoEncontradoException) {
+                aluno = new Aluno();
+                aluno.setMatricula(linha.getCell(1).getStringCellValue());
+                aluno.setNome(linha.getCell(2).getStringCellValue());
+            }
+            aluno.addExtracao(extracao);
+            extracao.addAluno(aluno);
 
-            listaAlunos.add(aluno);
+            alunoService.salvar(aluno);
         }
-        return listaAlunos;
     }
-
 }
