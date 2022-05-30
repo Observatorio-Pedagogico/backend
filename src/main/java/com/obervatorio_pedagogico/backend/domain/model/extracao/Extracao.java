@@ -1,11 +1,13 @@
 package com.obervatorio_pedagogico.backend.domain.model.extracao;
 
 import java.time.LocalDateTime;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -41,10 +43,11 @@ public class Extracao {
     private String descricao;
 
     @Column(name = "status")
+    @Enumerated(EnumType.STRING)
     private Status status;
 
-    @Column(name = "ano_letivo")
-    private Integer anoLetivo;
+    @Column(name = "periodo_letivo")
+    private String periodoLetivo;
     
     @Column(name = "ultima_data_hora_atualizacao")
     private LocalDateTime ultimaDataHoraAtualizacao;
@@ -55,11 +58,11 @@ public class Extracao {
             joinColumns = @JoinColumn(name = "id_extracao"),
             inverseJoinColumns = @JoinColumn(name = "id_aluno")
     )
-    private Set<Aluno> alunos;
+    private List<Aluno> alunos;
 
     public Boolean addAluno(Aluno aluno) {
         if (Objects.isNull(alunos))
-            alunos = new HashSet<>();
+            alunos = new ArrayList<>();
         if (!hasAluno(aluno))
             return alunos.add(aluno);
         return false;
@@ -67,7 +70,7 @@ public class Extracao {
 
     public Boolean removeAluno(Aluno aluno) {
         if (Objects.isNull(alunos))
-            alunos = new HashSet<>();
+            alunos = new ArrayList<>();
         return alunos.remove(aluno);
     }
     
