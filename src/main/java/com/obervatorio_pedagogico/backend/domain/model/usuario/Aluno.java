@@ -13,9 +13,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import com.obervatorio_pedagogico.backend.domain.model.disciplina.InformacoesPeriodo;
+import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
-import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
@@ -45,27 +44,24 @@ public class Aluno extends Usuario implements Serializable {
     @Column(name = "situacao_ultimo_periodo")
     private String situacaoUltimoPeriodo;
     
-    @ManyToMany(mappedBy = "alunos", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<Extracao> extracoes;
-    
     @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Nota> notas;
     
     @ManyToMany(mappedBy = "alunos", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<InformacoesPeriodo> informacoesPeriodos;
+    private List<Disciplina> disciplinas;
 
-    public Boolean addExtracao(Extracao extracao) {
-        if (Objects.isNull(extracoes))
-            extracoes = new ArrayList<>();
-        if (!hasExtracao(extracao))
-            return extracoes.add(extracao);
+    public Boolean addDisciplina(Disciplina disciplina) {
+        if (Objects.isNull(disciplinas))
+            disciplinas = new ArrayList<>();
+        if (!hasDisciplina(disciplina))
+            return disciplinas.add(disciplina);
         return false;
     }
 
-    public Boolean removeExtracao(Extracao extracao) {
-        if (Objects.isNull(extracoes))
-            extracoes = new ArrayList<>();
-        return extracoes.remove(extracao);
+    public Boolean removeDisciplina(Disciplina disciplina) {
+        if (Objects.isNull(disciplinas))
+            disciplinas = new ArrayList<>();
+        return disciplinas.remove(disciplina);
     }
 
     public Boolean addNota(Nota nota) {
@@ -82,11 +78,12 @@ public class Aluno extends Usuario implements Serializable {
         return notas.remove(nota);
     }
 
-    public Boolean hasExtracao(Extracao extracao) {
-        return extracoes.stream()
-            .filter(extracaoFiltro -> extracaoFiltro.getId().equals(extracao.getId()) 
-                || (extracaoFiltro.getTitulo().equals(extracao.getTitulo())
-                    && extracaoFiltro.getPeriodoLetivo().equals(extracao.getPeriodoLetivo()))
+    public Boolean hasDisciplina(Disciplina disciplina) {
+        return disciplinas.stream()
+            .filter(disciplinaFiltro -> disciplinaFiltro.getId().equals(disciplina.getId()) 
+                || (disciplinaFiltro.getNome().equals(disciplina.getNome())
+                    && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo())
+                    && disciplinaFiltro.getProfessor().equals("ahhhhhhhh"))
             ).findFirst()
             .isPresent();
     }
@@ -97,8 +94,8 @@ public class Aluno extends Usuario implements Serializable {
                 || (notaFiltro.getValor().equals(nota.getValor())
                     && notaFiltro.getOrdem().equals(nota.getOrdem())
                     && notaFiltro.getTipo().equals(nota.getTipo())
-                    && notaFiltro.getInformacoesPeriodo().getDisciplina().equals(nota.getInformacoesPeriodo().getDisciplina())
-                    && notaFiltro.getInformacoesPeriodo().getPeriodoLetivo().equals(nota.getInformacoesPeriodo().getPeriodoLetivo()))
+                    && notaFiltro.getDisciplina().equals(nota.getDisciplina())
+                    && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo()))
             ).findFirst()
             .isPresent();
     }

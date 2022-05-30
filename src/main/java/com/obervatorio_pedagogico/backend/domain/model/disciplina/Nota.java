@@ -47,8 +47,8 @@ public class Nota {
     private Aluno aluno;
     
     @ManyToOne
-    @JoinColumn(name = "id_informacoesPeriodo")
-    private InformacoesPeriodo informacoesPeriodo;
+    @JoinColumn(name = "id_disciplina")
+    private Disciplina disciplina;
 
     public enum Tipo {
         NOTA, MEDIA, FINAL;

@@ -16,7 +16,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
+import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -58,25 +58,26 @@ public class Extracao {
             joinColumns = @JoinColumn(name = "id_extracao"),
             inverseJoinColumns = @JoinColumn(name = "id_aluno")
     )
-    private List<Aluno> alunos;
+    private List<Disciplina> disciplinas;
 
-    public Boolean addAluno(Aluno aluno) {
-        if (Objects.isNull(alunos))
-            alunos = new ArrayList<>();
-        if (!hasAluno(aluno))
-            return alunos.add(aluno);
+    public Boolean addDisciplina(Disciplina disciplina) {
+        if (Objects.isNull(disciplinas))
+            disciplinas = new ArrayList<>();
+        if (!hasDisciplina(disciplina))
+            return disciplinas.add(disciplina);
         return false;
     }
 
-    public Boolean removeAluno(Aluno aluno) {
-        if (Objects.isNull(alunos))
-            alunos = new ArrayList<>();
-        return alunos.remove(aluno);
+    public Boolean removeDisciplina(Disciplina disciplina) {
+        if (Objects.isNull(disciplinas))
+            disciplinas = new ArrayList<>();
+        return disciplinas.remove(disciplina);
     }
-    
-    public Boolean hasAluno(Aluno aluno) {
-        return alunos.stream()
-            .filter(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()) || alunoFiltro.getMatricula().equals(aluno.getMatricula()))
+
+    public Boolean hasDisciplina(Disciplina disciplina) {
+        return disciplinas.stream()
+            .filter(disciplinaFiltro -> disciplinaFiltro.getId().equals(disciplina.getId()) 
+            || disciplinaFiltro.getNome().equals(disciplina.getNome()))
             .findFirst()
             .isPresent();
     }
