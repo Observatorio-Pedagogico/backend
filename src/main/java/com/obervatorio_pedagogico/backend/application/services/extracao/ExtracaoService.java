@@ -1,7 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
-import java.util.Iterator;
+import java.util.Objects;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
@@ -68,25 +68,37 @@ public class ExtracaoService {
     }
 
     private void cadastrarExtracaoAlunosBySheet(Extracao extracao, Sheet sheet) {
-        Iterator<Row> linhasInterator = sheet.iterator();
         Row linha;
+        Aluno aluno = null;
+        Disciplina disciplina = null;
 
-        while(linhasInterator.hasNext()) {
-            linha = linhasInterator.next();
+        for (int i = 0; i < sheet.getLastRowNum(); i++) {
+            linha = sheet.getRow(i);
 
             if (linha.getRowNum() == 0 || linha.getCell(0).getStringCellValue().isEmpty())
                 continue;
 
-            Disciplina disciplina = cadastrarDisciplinaNaExtracao(linha);
-            Aluno aluno = cadastrarAlunosNaExtracao(linha);
+            disciplina = cadastrarDisciplinaNaExtracao(linha);
 
-            disciplina.addAluno(aluno);
+            if (i < sheet.getLastRowNum()-1) {
+                if (Objects.isNull(aluno) || !aluno.getMatricula().equals(sheet.getRow(i+1).getCell(1).getStringCellValue())) {
+                    if (!Objects.isNull(aluno)) {
+                        alunoService.salvar(aluno);
+                        aluno = null;
+                        continue;
+                    } else {
+                        aluno = cadastrarAlunosNaExtracao(linha);
+                    }
+                }
+            } else {
+                aluno.addDisciplina(disciplina);
+                extracao.addDisciplina(disciplina);
+                aluno = cadastrarAlunosNaExtracao(linha);
+                continue;
+            }
+                
             aluno.addDisciplina(disciplina);
-            
             extracao.addDisciplina(disciplina);
-
-            disciplinaService.salvar(disciplina);
-            alunoService.salvar(aluno);
             System.err.println(aluno.getNome());
         }
     }
@@ -94,13 +106,14 @@ public class ExtracaoService {
     private Disciplina cadastrarDisciplinaNaExtracao(Row linha) {
         Disciplina disciplina;
         try {
-            disciplina = disciplinaService.buscarPorCodigo(linha.getCell(4).getStringCellValue());
+            disciplina = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), linha.getCell(7).getStringCellValue());
         } catch (DisciplinaNaoEncontradaException disciplinaNaoEncontradaException) {
             disciplina = new Disciplina();
             disciplina.setCodigo(linha.getCell(4).getStringCellValue());
             disciplina.setNome(linha.getCell(5).getStringCellValue());
+            disciplina.setPeriodoLetivo(linha.getCell(7).getStringCellValue());
 
-            disciplina = disciplinaService.salvar(disciplina);
+            // disciplina = disciplinaService.salvar(disciplina);
         }
         return disciplina;
     }

@@ -46,7 +46,7 @@ public class Disciplina {
     @Column(name = "periodo_matriz")
     private String periodoMatriz;
 
-    @Column(name = "preriodo_letivo")
+    @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
     @Column(name = "id_professor")

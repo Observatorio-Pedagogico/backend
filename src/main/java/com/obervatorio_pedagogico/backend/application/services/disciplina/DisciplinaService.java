@@ -29,8 +29,8 @@ public class DisciplinaService {
         return listaDisciplinaSalvas;
     }
 
-    public Disciplina buscarPorCodigo(String codigo) {
-        Optional<Disciplina> disciplinaSalvaOp = disciplinaRepository.findDisciplinaByCodigo(codigo);
+    public Disciplina buscarPorCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {
+        Optional<Disciplina> disciplinaSalvaOp = disciplinaRepository.findDisciplinaByCodigoAndPeriodoLetivo(codigo, periodoLetivo);
         if(!disciplinaSalvaOp.isPresent())
             throw new DisciplinaNaoEncontradaException(AtributoBuscado.CODIGO, codigo);
         return disciplinaSalvaOp.get();

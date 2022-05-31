@@ -76,11 +76,10 @@ public class Extracao {
 
     public Boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .filter(disciplinaFiltro -> disciplinaFiltro.getId().equals(disciplina.getId()) 
-            || disciplinaFiltro.getNome().equals(disciplina.getNome()))
+            .filter(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome()))
             .findFirst()
             .isPresent();
-    }
+    } // TODO adicionar has by id
 
     public Boolean isStatusAtiva() {
         return status.isAtiva();

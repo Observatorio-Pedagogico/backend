@@ -80,13 +80,13 @@ public class Aluno extends Usuario implements Serializable {
 
     public Boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .filter(disciplinaFiltro -> disciplinaFiltro.getId().equals(disciplina.getId()) 
-                || (disciplinaFiltro.getNome().equals(disciplina.getNome())
+            .filter(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome())
                     && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo())
-                    && disciplinaFiltro.getProfessor().equals("ahhhhhhhh"))
             ).findFirst()
             .isPresent();
-    }
+    } 
+    //TODO adicionar validarcao de professor aqui
+    //TODO adicionar has by id
     
     public Boolean hasNota(Nota nota) {
         return notas.stream()
