@@ -1,0 +1,27 @@
+version: '3.1'
+services:
+    # DATABASES
+    db-api:
+        container_name: db-api
+        image: postgres:12-alpine
+        restart: always
+        ports:
+            - "5431:5432"
+        environment:
+            POSTGRES_USER: user
+            POSTGRES_PASSWORD: user
+        volumes:
+            - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
+            - ../bancos/postgres/data-dev:/var/lib/postgresql/data
+
+    # SERVIÇOS
+    backend:
+        container_name: backend
+        image: openjdk:8-alpine
+        ports:
+            - "8080:8080"
+        command: java -Duser.timezone=GMT-03:00 -Xmx512m -Xmx256m -jar /xpto/api-a.jar
+        volumes:
+            - ./target/hub-0.0.1-SNAPSHOT.jar:/xpto/backend.jar
+        links:
+            - db-api
