@@ -18,7 +18,7 @@ public class DisciplinaNaoEncontradaException extends RuntimeException {
     }
 
     private static String criarMensagem(AtributoBuscado atributoBuscado, String atributoBuscaValor) {
-        return String.format("%s pelo atributo %s=%s não encontrado", atributoBuscado.toString(), atributoBuscaValor);
+        return String.format("Busca de disciplina pelo atributo %s=%s não encontrado", atributoBuscado.toString(), atributoBuscaValor);
     }
 
     public enum AtributoBuscado {

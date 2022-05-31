@@ -5,6 +5,7 @@ import java.util.Iterator;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
+import com.obervatorio_pedagogico.backend.domain.exceptions.DisciplinaNaoEncontradaException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
@@ -86,6 +87,7 @@ public class ExtracaoService {
 
             disciplinaService.salvar(disciplina);
             alunoService.salvar(aluno);
+            System.err.println(aluno.getNome());
         }
     }
 
@@ -93,7 +95,7 @@ public class ExtracaoService {
         Disciplina disciplina;
         try {
             disciplina = disciplinaService.buscarPorCodigo(linha.getCell(4).getStringCellValue());
-        } catch (UsuarioNaoEncontradoException usuarioNaoEncontradoException) {
+        } catch (DisciplinaNaoEncontradaException disciplinaNaoEncontradaException) {
             disciplina = new Disciplina();
             disciplina.setCodigo(linha.getCell(4).getStringCellValue());
             disciplina.setNome(linha.getCell(5).getStringCellValue());

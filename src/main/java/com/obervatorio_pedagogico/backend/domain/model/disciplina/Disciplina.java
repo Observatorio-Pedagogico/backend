@@ -81,7 +81,6 @@ public class Disciplina {
         return alunos.stream()
             .filter(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()) 
                 || (alunoFiltro.getNome().equals(aluno.getNome())
-                    && alunoFiltro.getEmail().equals(aluno.getEmail())
                     && alunoFiltro.getMatricula().equals(aluno.getMatricula()))
             ).findFirst()
             .isPresent();

@@ -54,9 +54,9 @@ public class Extracao {
 
     @ManyToMany
     @JoinTable(
-            name = "t_extracao_aluno",
+            name = "t_extracao_disciplina",
             joinColumns = @JoinColumn(name = "id_extracao"),
-            inverseJoinColumns = @JoinColumn(name = "id_aluno")
+            inverseJoinColumns = @JoinColumn(name = "id_disciplina")
     )
     private List<Disciplina> disciplinas;
 
