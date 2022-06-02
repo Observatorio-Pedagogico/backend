@@ -18,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_endereco")
-public class EnderecoModel {
+public class Endereco {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

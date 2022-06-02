@@ -8,7 +8,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
 
-import com.obervatorio_pedagogico.backend.domain.model.endereco.EnderecoModel;
+import com.obervatorio_pedagogico.backend.domain.model.endereco.Endereco;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -39,7 +39,7 @@ public abstract class Usuario {
 
     @OneToOne
     @JoinColumn(name = "id_endereco")
-    private EnderecoModel endereco;
+    private Endereco endereco;
 
     public enum Sexo {
         MASCULINO, FEMININO
