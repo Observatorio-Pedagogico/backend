@@ -13,6 +13,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
 
@@ -28,6 +29,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "t_aluno")
 public class Aluno extends Usuario implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Column(name = "data_nascimento")
     private LocalDate dataNascimento;
@@ -49,6 +52,9 @@ public class Aluno extends Usuario implements Serializable {
     
     @ManyToMany(mappedBy = "alunos", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     private List<Disciplina> disciplinas;
+
+    @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FrequenciaSituacao> frequenciaSituacoes;
 
     public Boolean addDisciplina(Disciplina disciplina) {
         if (Objects.isNull(disciplinas))
@@ -80,10 +86,8 @@ public class Aluno extends Usuario implements Serializable {
 
     public Boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .filter(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome())
-                    && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo())
-            ).findFirst()
-            .isPresent();
+            .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome())
+            && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
     } 
     //TODO adicionar validarcao de professor aqui
     //TODO adicionar has by id

@@ -6,6 +6,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -17,6 +18,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
 
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +32,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_disciplina")
-public class Disciplina {
+public class Disciplina implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -62,6 +66,9 @@ public class Disciplina {
 
     @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Nota> notas;
+
+    @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<FrequenciaSituacao> frequenciaSituacoes;
 
     public Boolean addAluno(Aluno aluno) {
         if (Objects.isNull(alunos))
