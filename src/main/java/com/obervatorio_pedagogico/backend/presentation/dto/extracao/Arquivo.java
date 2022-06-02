@@ -27,23 +27,17 @@ public class Arquivo {
             tipo = conteudo.getContentType();
     }
 
-    public Boolean isXls() {
+    public boolean isXls() {
         initTipo();
-        if (tipo.equals(XLS_CODE))
-            return true;
-        return false;
+        return tipo.equals(XLS_CODE);
     }
 
-    public Boolean isXlsx() {
+    public boolean isXlsx() {
         initTipo();
-        if (tipo.equals(XLSX_CODE))
-            return true;
-        return false;
+        return tipo.equals(XLSX_CODE);
     }
 
-    public Boolean isSuportado() {
-        if (isXls() || isXlsx())
-            return true;
-        return false;
+    public boolean isSuportado() {
+        return (isXls() || isXlsx());
     }
 }

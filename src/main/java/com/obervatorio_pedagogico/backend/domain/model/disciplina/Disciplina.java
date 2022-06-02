@@ -53,9 +53,6 @@ public class Disciplina implements Serializable {
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
-    @Column(name = "id_professor")
-    private String professor; //TODO Criar objeto professor
-    
     @ManyToMany
     @JoinTable(
             name = "t_disciplina_alunos",
@@ -78,24 +75,20 @@ public class Disciplina implements Serializable {
         return false;
     }
 
-    public Boolean removeAluno(Aluno aluno) {
+    public boolean removeAluno(Aluno aluno) {
         if (Objects.isNull(alunos))
             alunos = new ArrayList<>();
         return alunos.remove(aluno);
     }
 
-    public Boolean hasAlunos(Aluno aluno) {
+    public boolean hasAlunos(Aluno aluno) {
         return alunos.stream()
-            .filter(alunoFiltro ->(alunoFiltro.getNome().equals(aluno.getNome())
-                    && alunoFiltro.getMatricula().equals(aluno.getMatricula()))
-            ).findFirst()
-            .isPresent();
+            .anyMatch(alunoFiltro ->(alunoFiltro.getNome().equals(aluno.getNome())
+            && alunoFiltro.getMatricula().equals(aluno.getMatricula())));
     }
 
-    public Boolean hasAlunosById(Aluno aluno) {
+    public boolean hasAlunosById(Aluno aluno) {
         return alunos.stream()
-            .filter(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId())
-            ).findFirst()
-            .isPresent();
+        .anyMatch(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()));
     }
 }

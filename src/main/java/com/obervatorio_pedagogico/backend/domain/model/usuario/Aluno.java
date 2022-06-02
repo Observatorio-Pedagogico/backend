@@ -78,29 +78,25 @@ public class Aluno extends Usuario implements Serializable {
         return false;
     }
 
-    public Boolean removeNota(Nota nota) {
+    public boolean removeNota(Nota nota) {
         if (Objects.isNull(notas))
             notas = new ArrayList<>();
         return notas.remove(nota);
     }
 
-    public Boolean hasDisciplina(Disciplina disciplina) {
+    public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
             .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome())
             && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
     } 
-    //TODO adicionar validarcao de professor aqui
-    //TODO adicionar has by id
     
-    public Boolean hasNota(Nota nota) {
+    public boolean hasNota(Nota nota) {
         return notas.stream()
-            .filter(notaFiltro -> notaFiltro.getId().equals(nota.getId()) 
-                || (notaFiltro.getValor().equals(nota.getValor())
-                    && notaFiltro.getOrdem().equals(nota.getOrdem())
-                    && notaFiltro.getTipo().equals(nota.getTipo())
-                    && notaFiltro.getDisciplina().equals(nota.getDisciplina())
-                    && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo()))
-            ).findFirst()
-            .isPresent();
+            .anyMatch(notaFiltro -> notaFiltro.getId().equals(nota.getId()) 
+            || (notaFiltro.getValor().equals(nota.getValor())
+                && notaFiltro.getOrdem().equals(nota.getOrdem())
+                && notaFiltro.getTipo().equals(nota.getTipo())
+                && notaFiltro.getDisciplina().equals(nota.getDisciplina())
+                && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo())));
     }
 }

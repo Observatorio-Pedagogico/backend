@@ -61,6 +61,7 @@ public class ExtracaoService {
             Sheet sheet = workbook.getSheetAt(0);
 
             cadastrarExtracao(extracao, sheet);
+            workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -71,14 +72,10 @@ public class ExtracaoService {
         Aluno aluno = null;
         Disciplina disciplina = null;
 
-        for (int i = 0; i < sheet.getLastRowNum(); i++) {
+        for (int i = 1; i < sheet.getLastRowNum(); i++) {
             linha = sheet.getRow(i);
 
-            if (linha.getRowNum() == 0 || linha.getCell(0).getStringCellValue().isEmpty())
-                continue;
-
             disciplina = cadastrarDisciplina(linha);
-
             if (
                 (
                 Objects.isNull(aluno) 
@@ -94,17 +91,14 @@ public class ExtracaoService {
                     continue;
                 }
                 aluno = cadastrarAluno(linha);
+                aluno.addDisciplina(disciplina);
             }
-
-            aluno.addDisciplina(disciplina);
             extracao.addDisciplina(disciplina);
             disciplina.addAluno(aluno);
 
             if (i >= sheet.getLastRowNum()-1) {
                 alunoService.salvar(aluno);
             }
-
-            System.out.println(aluno.getNome());
         }
     }
 

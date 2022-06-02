@@ -74,18 +74,16 @@ public class Extracao {
         return disciplinas.remove(disciplina);
     }
 
-    public Boolean hasDisciplina(Disciplina disciplina) {
+    public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .filter(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome()))
-            .findFirst()
-            .isPresent();
-    } // TODO adicionar has by id
+        .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome()));
+    }
 
-    public Boolean isStatusAtiva() {
+    public boolean isStatusAtiva() {
         return status.isAtiva();
     }
 
-    public Boolean isStatusCancelada() {
+    public boolean isStatusCancelada() {
         return status.isCancelada();
     }
 
