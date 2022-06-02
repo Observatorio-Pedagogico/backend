@@ -2,12 +2,11 @@ package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
 import java.util.Objects;
+import java.util.Optional;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
-import com.obervatorio_pedagogico.backend.domain.exceptions.DisciplinaNaoEncontradaException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
-import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
@@ -18,7 +17,7 @@ import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequ
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
-import  org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.stereotype.Service;
 
@@ -61,13 +60,13 @@ public class ExtracaoService {
             Workbook workbook = WorkbookFactory.create(arquivo.getConteudo().getInputStream());
             Sheet sheet = workbook.getSheetAt(0);
 
-            cadastrarExtracaoAlunosBySheet(extracao, sheet);
+            cadastrarExtracao(extracao, sheet);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void cadastrarExtracaoAlunosBySheet(Extracao extracao, Sheet sheet) {
+    private void cadastrarExtracao(Extracao extracao, Sheet sheet) {
         Row linha;
         Aluno aluno = null;
         Disciplina disciplina = null;
@@ -78,57 +77,59 @@ public class ExtracaoService {
             if (linha.getRowNum() == 0 || linha.getCell(0).getStringCellValue().isEmpty())
                 continue;
 
-            disciplina = cadastrarDisciplinaNaExtracao(linha);
+            disciplina = cadastrarDisciplina(linha);
 
-            if (i < sheet.getLastRowNum()-1) {
-                if (Objects.isNull(aluno) || !aluno.getMatricula().equals(sheet.getRow(i+1).getCell(1).getStringCellValue())) {
-                    if (!Objects.isNull(aluno)) {
-                        alunoService.salvar(aluno);
-                        aluno = null;
-                        continue;
-                    } else {
-                        aluno = cadastrarAlunosNaExtracao(linha);
-                    }
+            if (
+                (
+                Objects.isNull(aluno) 
+                || !aluno.getMatricula().equals(sheet.getRow(i+1).getCell(1).getStringCellValue())
+                ) && i < sheet.getLastRowNum()-1)
+            {
+                if (Objects.nonNull(aluno)) {
+                    aluno.addDisciplina(disciplina);
+                    extracao.addDisciplina(disciplina);
+                    disciplina.addAluno(aluno);
+                    alunoService.salvar(aluno);
+                    aluno = null;
+                    continue;
                 }
-            } else {
-                aluno.addDisciplina(disciplina);
-                extracao.addDisciplina(disciplina);
-                aluno = cadastrarAlunosNaExtracao(linha);
-                continue;
+                aluno = cadastrarAluno(linha);
             }
-                
+
             aluno.addDisciplina(disciplina);
             extracao.addDisciplina(disciplina);
-            System.err.println(aluno.getNome());
+            disciplina.addAluno(aluno);
+
+            if (i >= sheet.getLastRowNum()-1) {
+                alunoService.salvar(aluno);
+            }
+
+            System.out.println(aluno.getNome());
         }
     }
 
-    private Disciplina cadastrarDisciplinaNaExtracao(Row linha) {
-        Disciplina disciplina;
-        try {
-            disciplina = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), linha.getCell(7).getStringCellValue());
-        } catch (DisciplinaNaoEncontradaException disciplinaNaoEncontradaException) {
-            disciplina = new Disciplina();
+    private Disciplina cadastrarDisciplina(Row linha) {
+        Optional<Disciplina> disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), linha.getCell(7).getStringCellValue());
+        
+        if (!disciplinaOp.isPresent()) {
+            Disciplina disciplina = new Disciplina();
             disciplina.setCodigo(linha.getCell(4).getStringCellValue());
             disciplina.setNome(linha.getCell(5).getStringCellValue());
             disciplina.setPeriodoLetivo(linha.getCell(7).getStringCellValue());
 
-            // disciplina = disciplinaService.salvar(disciplina);
+            return disciplina;
         }
-        return disciplina;
+        return disciplinaOp.get();
     }
 
-    private Aluno cadastrarAlunosNaExtracao(Row linha) {
-        Aluno aluno;
-        try {
-            aluno = alunoService.buscarPorMatricula(linha.getCell(1).getStringCellValue());
-        } catch (UsuarioNaoEncontradoException usuarioNaoEncontradoException) {
-            aluno = new Aluno();
+    private Aluno cadastrarAluno(Row linha) {
+        Optional<Aluno> alunoOp = alunoService.buscarPorMatricula(linha.getCell(1).getStringCellValue());
+        if (!alunoOp.isPresent()) {
+            Aluno aluno = new Aluno();
             aluno.setMatricula(linha.getCell(1).getStringCellValue());
             aluno.setNome(linha.getCell(2).getStringCellValue());
-
-            aluno = alunoService.salvar(aluno);
+            return aluno;
         }
-        return aluno;
+        return alunoOp.get();
     }
 }

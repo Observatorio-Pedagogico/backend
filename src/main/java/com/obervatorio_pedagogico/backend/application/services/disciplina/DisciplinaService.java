@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.obervatorio_pedagogico.backend.domain.exceptions.DisciplinaNaoEncontradaException;
-import com.obervatorio_pedagogico.backend.domain.exceptions.DisciplinaNaoEncontradaException.AtributoBuscado;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
 import org.springframework.stereotype.Service;
@@ -29,10 +27,8 @@ public class DisciplinaService {
         return listaDisciplinaSalvas;
     }
 
-    public Disciplina buscarPorCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {
+    public Optional<Disciplina> buscarPorCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {
         Optional<Disciplina> disciplinaSalvaOp = disciplinaRepository.findDisciplinaByCodigoAndPeriodoLetivo(codigo, periodoLetivo);
-        if(!disciplinaSalvaOp.isPresent())
-            throw new DisciplinaNaoEncontradaException(AtributoBuscado.CODIGO, codigo);
-        return disciplinaSalvaOp.get();
+        return disciplinaSalvaOp;
     }
 }

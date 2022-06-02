@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoEncontradoException;
-import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoEncontradoException.AtributoBuscado;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.usuario.AlunoRepository;
 
@@ -30,10 +28,8 @@ public class AlunoService {
         return listaAlunosSalvos;
     }
 
-    public Aluno buscarPorMatricula(String matricula) {
+    public Optional<Aluno> buscarPorMatricula(String matricula) {
         Optional<Aluno> alunoSalvoOp = alunoRepository.findAlunoByMatricula(matricula);
-        if(!alunoSalvoOp.isPresent())
-            throw new UsuarioNaoEncontradoException(AtributoBuscado.MATRICULA, "Aluno", matricula);
-        return alunoSalvoOp.get();
+        return alunoSalvoOp;
     }
 }

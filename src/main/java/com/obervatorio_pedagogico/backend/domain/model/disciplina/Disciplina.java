@@ -79,9 +79,15 @@ public class Disciplina {
 
     public Boolean hasAlunos(Aluno aluno) {
         return alunos.stream()
-            .filter(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()) 
-                || (alunoFiltro.getNome().equals(aluno.getNome())
+            .filter(alunoFiltro ->(alunoFiltro.getNome().equals(aluno.getNome())
                     && alunoFiltro.getMatricula().equals(aluno.getMatricula()))
+            ).findFirst()
+            .isPresent();
+    }
+
+    public Boolean hasAlunosById(Aluno aluno) {
+        return alunos.stream()
+            .filter(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId())
             ).findFirst()
             .isPresent();
     }
