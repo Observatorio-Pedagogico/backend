@@ -7,7 +7,13 @@ import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.Model
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
+
+import java.util.List;
+
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,5 +36,14 @@ public class ExtracaoController {
         Extracao extracaoModel = extracaoService.cadastrar(extracaoRequest);
         ExtracaoResponse extracaoResponse = modelMapperService.convert(extracaoModel, ExtracaoResponse.class);
         return responseService.create(extracaoResponse);
+    }
+
+    @GetMapping("/get-todos")
+    public ResponseEntity<Response<List<Extracao>>> getTodos(){
+        try {
+            return responseService.ok(extracaoService.getTodos());
+        } catch (NotFoundException e) {
+            return responseService.notFound();
+        }
     }
 }

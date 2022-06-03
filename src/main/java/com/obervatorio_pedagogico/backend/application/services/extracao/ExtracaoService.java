@@ -1,6 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -19,6 +20,7 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
@@ -44,6 +46,14 @@ public class ExtracaoService {
     public void processar(Extracao extracao, Arquivo arquivo) {
         validarArquivo(arquivo);
         lerArquivo(extracao, arquivo);
+    }
+
+    public List<Extracao> getTodos() throws NotFoundException{
+        List<Extracao> extracoes = extracaoRepository.findAll();
+        if(extracoes.isEmpty()){
+            throw new NotFoundException();
+        }
+        return extracoes;
     }
     
     private void validarFormatoArquivo(Arquivo arquivo) {
@@ -126,4 +136,6 @@ public class ExtracaoService {
         }
         return alunoOp.get();
     }
+
+
 }
