@@ -85,7 +85,11 @@ public class ExtracaoService {
         for (int i = 1; i < sheet.getLastRowNum(); i++) {
             linha = sheet.getRow(i);
 
+            if (linha.getCell(0).getStringCellValue().isEmpty())
+                continue;
+
             disciplina = cadastrarDisciplina(linha);
+
             if (
                 (
                 Objects.isNull(aluno) 
@@ -101,8 +105,9 @@ public class ExtracaoService {
                     continue;
                 }
                 aluno = cadastrarAluno(linha);
-                aluno.addDisciplina(disciplina);
             }
+
+            aluno.addDisciplina(disciplina);
             extracao.addDisciplina(disciplina);
             disciplina.addAluno(aluno);
 
