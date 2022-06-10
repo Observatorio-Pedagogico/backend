@@ -13,7 +13,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExtracaoRequest {
+public class ExtracaoResponseResumido {
+
+    private Long id;
 
     private String titulo;
 
@@ -24,6 +26,4 @@ public class ExtracaoRequest {
     private String periodoLetivo;
 
     private LocalDateTime ultimaDataHoraAtualizacao;
-
-    private Arquivo arquivo;
 }

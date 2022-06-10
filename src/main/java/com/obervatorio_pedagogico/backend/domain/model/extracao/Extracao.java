@@ -16,6 +16,9 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 
 import lombok.AllArgsConstructor;
@@ -53,6 +56,7 @@ public class Extracao {
     private LocalDateTime ultimaDataHoraAtualizacao;
 
     @ManyToMany
+    @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinTable(
             name = "t_extracao_disciplina",
             joinColumns = @JoinColumn(name = "id_extracao"),
