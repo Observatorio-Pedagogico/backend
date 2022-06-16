@@ -1,6 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -9,15 +10,16 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
@@ -48,12 +50,45 @@ public class ExtracaoService {
         lerArquivo(extracao, arquivo);
     }
 
-    public List<Extracao> getTodos() throws NotFoundException{
+    public List<Extracao> getTodos() {
         List<Extracao> extracoes = extracaoRepository.findAll();
         if(extracoes.isEmpty()){
-            throw new NotFoundException();
+            throw new NaoEncontradoException();
         }
         return extracoes;
+    }
+
+    public Extracao getById(Long id){
+        Optional<Extracao> extracao = extracaoRepository.findById(id);
+        if(!extracao.isPresent()){
+            throw new NaoEncontradoException();
+        }
+        return extracao.get();
+    }
+
+    public List<Extracao> getByStatus(Status status){
+        List<Extracao> extracoes = extracaoRepository.findByStatus(status);
+        if(extracoes.isEmpty()){
+            throw new NaoEncontradoException();
+        }
+        return extracoes;
+    }
+
+    public List<Extracao> getByPeriodoLetivo(String periodoLetivo){
+        List<Extracao> extracoes = extracaoRepository.findByPeriodoLetivo(periodoLetivo);
+        if(extracoes.isEmpty()){
+            throw new NaoEncontradoException();
+        }
+        return extracoes;
+    }
+
+    public void deletaExtracao(Long id){
+        
+        if(id.equals(null)){
+            throw new NaoEncontradoException("a extracao de " + id);
+        }
+        
+        extracaoRepository.deleteById(id);
     }
     
     private void validarFormatoArquivo(Arquivo arquivo) {
@@ -122,6 +157,8 @@ public class ExtracaoService {
             aluno.addDisciplina(disciplina);
             extracao.addDisciplina(disciplina);
         }
+        extracao.setStatus(Status.ATIVA);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
         extracaoRepository.save(extracao);
         System.out.println(extracao.getTitulo());
     }
