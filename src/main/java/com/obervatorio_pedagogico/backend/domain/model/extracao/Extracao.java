@@ -109,8 +109,12 @@ public class Extracao {
         return status.isCancelada();
     }
 
+    public boolean isEnviando() {
+        return status.isEnviando();
+    }
+
     public enum Status {
-        ATIVA, CANCELADA;
+        ATIVA, CANCELADA, ENVIANDO;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -118,6 +122,10 @@ public class Extracao {
 
         public Boolean isCancelada() {
             return CANCELADA.equals(this);
+        }
+
+        public Boolean isEnviando() {
+            return ENVIANDO.equals(this);
         }
     }
 }

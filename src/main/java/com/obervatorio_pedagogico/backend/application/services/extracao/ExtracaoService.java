@@ -19,6 +19,7 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSup
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
@@ -113,23 +114,29 @@ public class ExtracaoService {
     }
 
     public void iniciarThread(Extracao extracao, Sheet sheet) {
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                cadastrarExtracao(extracao, sheet);
-            }
-        });
-
+        ExtracaoThread thread = new ExtracaoThread();
         Uploader.getInstance().addThread(thread);
-        thread.start();
+
+        thread.setRunnable(
+            new Runnable() {
+                @Override
+                public void run() {
+                    cadastrarExtracao(extracao, sheet, thread);
+                }
+            }
+        );
     }
 
-    private void cadastrarExtracao(Extracao extracao, Sheet sheet) {
+    private void cadastrarExtracao(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
         Row linha;
         Aluno aluno = null;
 
+        extracaoThread.setTotalLinhas(sheet.getLastRowNum());
+        extracaoThread.setExtracao(extracao);
+
+        extracao.setStatus(Status.ENVIANDO);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
         extracaoRepository.save(extracao);
-        System.out.println(extracao.getId());
         for (int i = 1; i < sheet.getLastRowNum(); i++) {
             linha = sheet.getRow(i);
 
@@ -148,6 +155,7 @@ public class ExtracaoService {
                     aluno.addDisciplina(disciplina);
                     extracao.addDisciplina(disciplina);
                     aluno = null;
+                    extracaoThread.setLinhaAtual(i);
                     continue;
                 }
                 aluno = findAluno(linha, extracao);
@@ -160,6 +168,7 @@ public class ExtracaoService {
         extracao.setStatus(Status.ATIVA);
         extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
         extracaoRepository.save(extracao);
+        Uploader.getInstance().removeThread(extracao.getId());
         System.out.println(extracao.getTitulo());
     }
 
