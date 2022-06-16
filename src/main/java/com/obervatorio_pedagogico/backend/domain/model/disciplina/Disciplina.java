@@ -14,6 +14,7 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
@@ -53,19 +54,30 @@ public class Disciplina implements Serializable {
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY, 
+    cascade = {
+        CascadeType.MERGE, CascadeType.PERSIST
+    })
     @JoinTable(
             name = "t_disciplina_alunos",
             joinColumns = @JoinColumn (name = "id_disciplina"),
             inverseJoinColumns = @JoinColumn(name = "id_aluno")
     )
-    private List<Aluno> alunos;
+    private List<Aluno> alunos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Nota> notas;
+    @OneToMany(
+        mappedBy = "disciplina", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Nota> notas = new ArrayList<>();
 
-    @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FrequenciaSituacao> frequenciaSituacoes;
+    @OneToMany(
+        mappedBy = "disciplina", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     public Boolean addAluno(Aluno aluno) {
         if (Objects.isNull(alunos))

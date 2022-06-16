@@ -4,10 +4,13 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,6 +20,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -52,13 +56,17 @@ public class Extracao {
     @Column(name = "ultima_data_hora_atualizacao")
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY,
+    cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    })
     @JoinTable(
             name = "t_extracao_disciplina",
             joinColumns = @JoinColumn(name = "id_extracao"),
             inverseJoinColumns = @JoinColumn(name = "id_disciplina")
     )
-    private List<Disciplina> disciplinas;
+    private List<Disciplina> disciplinas = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
         if (Objects.isNull(disciplinas))
@@ -77,6 +85,19 @@ public class Extracao {
     public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
         .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome()));
+    }
+
+    public Optional<Disciplina> findDisciplinaByCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {
+        return getDisciplinas().stream()
+            .filter(disciplina -> disciplina.getCodigo().equals(codigo) && disciplina.getPeriodoLetivo().equals(periodoLetivo))
+            .findFirst();
+    }
+
+    public Optional<Aluno> findAlunoByMatricula(String matricula) {
+        return getDisciplinas().stream()
+            .flatMap(disciplina -> disciplina.getAlunos().stream())
+            .filter(aluno -> aluno.getMatricula().equals(matricula))
+            .findAny();
     }
 
     public boolean isStatusAtiva() {

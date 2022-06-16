@@ -11,7 +11,6 @@ import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 import java.util.List;
 
 import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,9 +32,8 @@ public class ExtracaoController {
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest) {
-        Extracao extracaoModel = extracaoService.cadastrar(extracaoRequest);
-        ExtracaoResponse extracaoResponse = modelMapperService.convert(extracaoModel, ExtracaoResponse.class);
-        return responseService.create(extracaoResponse);
+        extracaoService.cadastrar(extracaoRequest);
+        return responseService.create(null);
     }
 
     @GetMapping("/get-todos")

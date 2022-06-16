@@ -9,6 +9,7 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -47,20 +48,35 @@ public class Aluno extends Usuario implements Serializable {
     @Column(name = "situacao_ultimo_periodo")
     private String situacaoUltimoPeriodo;
     
-    @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Nota> notas;
+    @OneToMany(
+        mappedBy = "aluno", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Nota> notas = new ArrayList<>();
     
-    @ManyToMany(mappedBy = "alunos", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<Disciplina> disciplinas;
+    @ManyToMany(fetch = FetchType.LAZY,
+    cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    },
+    mappedBy = "alunos")
+    private List<Disciplina> disciplinas = new ArrayList<>();
 
-    @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<FrequenciaSituacao> frequenciaSituacoes;
+    @OneToMany(
+        mappedBy = "aluno", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
         if (Objects.isNull(disciplinas))
             disciplinas = new ArrayList<>();
-        if (!hasDisciplina(disciplina))
+        if (!hasDisciplina(disciplina)) {
+            disciplina.addAluno(this);
             return disciplinas.add(disciplina);
+        }
         return false;
     }
 

@@ -5,7 +5,15 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
+import org.springframework.stereotype.Service;
+
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
+import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
@@ -15,13 +23,6 @@ import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.Arquivo;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
-
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
-import org.apache.poi.ss.usermodel.WorkbookFactory;
-import org.springframework.data.crossstore.ChangeSetPersister.NotFoundException;
-import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
 
@@ -37,10 +38,9 @@ public class ExtracaoService {
 
     private final ModelMapperService modelMapperService;
     
-    public Extracao cadastrar(ExtracaoRequest extracaoRequest) {
+    public void cadastrar(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
         processar(extracao, extracaoRequest.getArquivo());
-        return extracaoRepository.save(extracao);
     }
 
     public void processar(Extracao extracao, Arquivo arquivo) {
@@ -70,25 +70,38 @@ public class ExtracaoService {
             Workbook workbook = WorkbookFactory.create(arquivo.getConteudo().getInputStream());
             Sheet sheet = workbook.getSheetAt(0);
 
-            cadastrarExtracao(extracao, sheet);
+            iniciarThread(extracao, sheet);
             workbook.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
+    public void iniciarThread(Extracao extracao, Sheet sheet) {
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                cadastrarExtracao(extracao, sheet);
+            }
+        });
+
+        Uploader.getInstance().addThread(thread);
+        thread.start();
+    }
+
     private void cadastrarExtracao(Extracao extracao, Sheet sheet) {
         Row linha;
         Aluno aluno = null;
-        Disciplina disciplina = null;
 
+        extracaoRepository.save(extracao);
+        System.out.println(extracao.getId());
         for (int i = 1; i < sheet.getLastRowNum(); i++) {
             linha = sheet.getRow(i);
 
             if (linha.getCell(0).getStringCellValue().isEmpty())
                 continue;
 
-            disciplina = cadastrarDisciplina(linha);
+            Disciplina disciplina = findDisciplina(linha, extracao);
 
             if (
                 (
@@ -99,48 +112,53 @@ public class ExtracaoService {
                 if (Objects.nonNull(aluno)) {
                     aluno.addDisciplina(disciplina);
                     extracao.addDisciplina(disciplina);
-                    disciplina.addAluno(aluno);
-                    alunoService.salvar(aluno);
                     aluno = null;
                     continue;
                 }
-                aluno = cadastrarAluno(linha);
+                aluno = findAluno(linha, extracao);
+                System.out.println(aluno.getNome());
             }
-
+            
             aluno.addDisciplina(disciplina);
             extracao.addDisciplina(disciplina);
-            disciplina.addAluno(aluno);
-
-            if (i >= sheet.getLastRowNum()-1) {
-                alunoService.salvar(aluno);
-            }
         }
+        extracaoRepository.save(extracao);
+        System.out.println(extracao.getTitulo());
     }
 
-    private Disciplina cadastrarDisciplina(Row linha) {
-        Optional<Disciplina> disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), linha.getCell(7).getStringCellValue());
+    private Disciplina findDisciplina(Row linha, Extracao extracao) {
+        Optional<Disciplina> disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
         
-        if (!disciplinaOp.isPresent()) {
-            Disciplina disciplina = new Disciplina();
-            disciplina.setCodigo(linha.getCell(4).getStringCellValue());
-            disciplina.setNome(linha.getCell(5).getStringCellValue());
-            disciplina.setPeriodoLetivo(linha.getCell(7).getStringCellValue());
+        if (disciplinaOp.isPresent()) return disciplinaOp.get();
 
-            return disciplina;
-        }
-        return disciplinaOp.get();
+        disciplinaOp = extracao.findDisciplinaByCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
+
+        if (disciplinaOp.isPresent()) return disciplinaOp.get();
+
+        Disciplina disciplina = new Disciplina();
+        disciplina.setCodigo(linha.getCell(4).getStringCellValue());
+        disciplina.setNome(linha.getCell(5).getStringCellValue());
+        disciplina.setPeriodoLetivo(definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
+
+        return disciplina;
     }
 
-    private Aluno cadastrarAluno(Row linha) {
+    private Aluno findAluno(Row linha, Extracao extracao) {
         Optional<Aluno> alunoOp = alunoService.buscarPorMatricula(linha.getCell(1).getStringCellValue());
-        if (!alunoOp.isPresent()) {
-            Aluno aluno = new Aluno();
-            aluno.setMatricula(linha.getCell(1).getStringCellValue());
-            aluno.setNome(linha.getCell(2).getStringCellValue());
-            return aluno;
-        }
-        return alunoOp.get();
+
+        if (alunoOp.isPresent()) return alunoOp.get();
+
+        alunoOp = extracao.findAlunoByMatricula(linha.getCell(1).getStringCellValue());
+
+        if (alunoOp.isPresent()) return alunoOp.get();
+
+        Aluno aluno = new Aluno();
+        aluno.setMatricula(linha.getCell(1).getStringCellValue());
+        aluno.setNome(linha.getCell(2).getStringCellValue());
+        return aluno;
     }
 
-
+    private String definirPeriodoLetivo(String anoLetivo, String serieLetivo) {
+        return anoLetivo.concat(".").concat(serieLetivo);
+    }
 }
