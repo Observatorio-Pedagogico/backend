@@ -159,17 +159,15 @@ public class ExtracaoService {
                     continue;
                 }
                 aluno = findAluno(linha, extracao);
-                System.out.println(aluno.getNome());
             }
             
             aluno.addDisciplina(disciplina);
             extracao.addDisciplina(disciplina);
         }
-        extracao.setStatus(Status.ATIVA);
-        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
         extracaoRepository.save(extracao);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+        extracao.setStatus(Status.ATIVA);
         Uploader.getInstance().removeThread(extracao.getId());
-        System.out.println(extracao.getTitulo());
     }
 
     private Disciplina findDisciplina(Row linha, Extracao extracao) {

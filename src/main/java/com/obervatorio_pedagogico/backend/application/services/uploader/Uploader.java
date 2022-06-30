@@ -37,4 +37,8 @@ public final class Uploader {
     public Optional<ExtracaoThread> findById(Long id) {
         return threads.stream().filter(thread -> thread.getExtracao().getId().equals(id)).findFirst();
     }
+
+    public List<ExtracaoThread> getThreads() {
+        return threads;
+    }
 }

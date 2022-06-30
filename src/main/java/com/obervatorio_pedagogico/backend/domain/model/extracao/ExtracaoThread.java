@@ -20,7 +20,8 @@ public class ExtracaoThread {
     public void calcularPorcentagem() {
         if (porcentagemDeEnvio < 100) {
             Integer result = (linhaAtual * 100) / totalLinhas;
-            porcentagemDeEnvio = result > 0 ? result-1 : result;
+            // porcentagemDeEnvio = result > 0 ? result-1 : result;
+            porcentagemDeEnvio = result;
         }
     }
 

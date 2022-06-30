@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.application.services.extracao;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
@@ -20,5 +21,14 @@ public class ExtracaoThreadService {
         
         extracaoThreadOp.get().calcularPorcentagem();
         return extracaoThreadOp.get();
+    }
+
+    public List<ExtracaoThread> getAll() {
+        List<ExtracaoThread> extracaoThreadList = uploader.getThreads();
+        
+        if(extracaoThreadList.isEmpty()) throw new NaoEncontradoException("Nenhuma extracao encontrada");
+        
+        extracaoThreadList.stream().forEach(ExtracaoThread::calcularPorcentagem);
+        return extracaoThreadList;
     }
 }

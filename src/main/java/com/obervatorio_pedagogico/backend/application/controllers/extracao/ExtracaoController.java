@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.application.controllers.extracao;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -52,6 +53,16 @@ public class ExtracaoController {
         ExtracaoThreadResponse response = modelMapperService.convert(extracaoThread, ExtracaoThreadResponse.class);
         
         return responseService.ok(response);
+    }
+
+    @GetMapping("/envio-status")
+    public ResponseEntity<Response<List<ExtracaoThreadResponse>>> getEnvioStatus(){
+        List<ExtracaoThread> extracaoThreadList = extracaoThreadService.getAll();
+
+        List<ExtracaoThreadResponse> responseList = new ArrayList<>();
+        extracaoThreadList.stream().forEach(thread -> responseList.add(modelMapperService.convert(thread, ExtracaoThreadResponse.class)));
+        
+        return responseService.ok(responseList);
     }
 
     @GetMapping("/get-todos")
