@@ -160,8 +160,9 @@ public class ExtracaoService {
                 }
                 aluno = findAluno(linha, extracao);
             }
-            
-            aluno.addDisciplina(disciplina);
+            if (Objects.nonNull(aluno)) {
+                aluno.addDisciplina(disciplina);
+            }
             extracao.addDisciplina(disciplina);
         }
         extracaoRepository.save(extracao);
