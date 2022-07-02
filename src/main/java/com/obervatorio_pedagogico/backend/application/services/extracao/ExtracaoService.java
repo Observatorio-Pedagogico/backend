@@ -159,6 +159,7 @@ public class ExtracaoService {
                     continue;
                 }
                 aluno = findAluno(linha, extracao);
+                System.out.println(aluno);
             }
             if (Objects.nonNull(aluno)) {
                 aluno.addDisciplina(disciplina);
