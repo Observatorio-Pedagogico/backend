@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ExtracaoThreadResponse {
 
-    private Integer porcentagemDeEnvio;
+    private Integer porcentagemEnvio;
 
     private ExtracaoResponseResumido extracao;
 }

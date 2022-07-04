@@ -17,8 +17,6 @@ public class ExtracaoResponseResumido {
 
     private Long id;
 
-    private Integer porcentagemDeEnvio = 0;
-
     private Integer totalLinhas = 0;
 
     private String titulo;
