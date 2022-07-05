@@ -55,7 +55,7 @@ public class Aluno extends Usuario implements Serializable {
     )
     private List<Nota> notas = new ArrayList<>();
     
-    @ManyToMany(fetch = FetchType.LAZY,
+    @ManyToMany(fetch = FetchType.EAGER,
     cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE

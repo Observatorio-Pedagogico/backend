@@ -54,7 +54,7 @@ public class Disciplina implements Serializable {
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
-    @ManyToMany(fetch = FetchType.LAZY, 
+    @ManyToMany(fetch = FetchType.EAGER, 
     cascade = {
         CascadeType.MERGE, CascadeType.PERSIST
     })
