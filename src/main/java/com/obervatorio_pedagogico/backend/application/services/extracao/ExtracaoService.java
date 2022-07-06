@@ -170,8 +170,9 @@ public class ExtracaoService {
         extracao.setStatus(Status.SALVANDO);
         extracaoRepository.save(extracao);
         extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
-        extracao.setStatus(Status.ATIVA);
         Uploader.getInstance().removeThread(extracao.getId());
+        extracao.setStatus(Status.ATIVA);
+        extracaoRepository.save(extracao);
     }
 
     private Disciplina findDisciplina(Row linha, Extracao extracao) {
