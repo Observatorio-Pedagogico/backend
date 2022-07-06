@@ -54,6 +54,9 @@ public class Extracao {
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
+    @Column(name = "data_cadastro")
+    private LocalDateTime datacadastro;
+
     @Column(name = "ultima_data_hora_atualizacao")
     private LocalDateTime ultimaDataHoraAtualizacao;
 
@@ -114,7 +117,7 @@ public class Extracao {
     }
 
     public enum Status {
-        ATIVA, CANCELADA, ENVIANDO;
+        ATIVA, CANCELADA, ENVIANDO, SALVANDO;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -126,6 +129,10 @@ public class Extracao {
 
         public Boolean isEnviando() {
             return ENVIANDO.equals(this);
+        }
+
+        public Boolean isSalvando() {
+            return SALVANDO.equals(this);
         }
     }
 }

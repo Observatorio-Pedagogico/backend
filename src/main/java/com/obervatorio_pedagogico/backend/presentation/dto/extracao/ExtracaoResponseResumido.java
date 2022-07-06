@@ -21,11 +21,11 @@ public class ExtracaoResponseResumido {
 
     private String titulo;
 
-    private String descricao;
-
     private Status status;
 
     private String periodoLetivo;
+
+    private LocalDateTime datacadastro;
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 }
