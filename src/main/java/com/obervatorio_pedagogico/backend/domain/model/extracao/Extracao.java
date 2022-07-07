@@ -55,7 +55,7 @@ public class Extracao {
     private String periodoLetivo;
     
     @Column(name = "data_cadastro")
-    private LocalDateTime datacadastro;
+    private LocalDateTime dataCadastro;
 
     @Column(name = "ultima_data_hora_atualizacao")
     private LocalDateTime ultimaDataHoraAtualizacao;

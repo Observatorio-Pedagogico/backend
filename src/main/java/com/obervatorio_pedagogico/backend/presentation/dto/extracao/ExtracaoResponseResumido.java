@@ -25,7 +25,7 @@ public class ExtracaoResponseResumido {
 
     private String periodoLetivo;
 
-    private LocalDateTime datacadastro;
+    private LocalDateTime dataCadastro;
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 }

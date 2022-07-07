@@ -135,7 +135,7 @@ public class ExtracaoService {
         extracaoThread.setExtracao(extracao);
 
         extracao.setStatus(Status.ENVIANDO);
-        extracao.setDatacadastro(LocalDateTime.now());
+        extracao.setDataCadastro(LocalDateTime.now());
         extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
         extracaoRepository.save(extracao);
         for (int i = 1; i < sheet.getLastRowNum(); i++) {
@@ -169,7 +169,7 @@ public class ExtracaoService {
         }
         extracao.setStatus(Status.SALVANDO);
         extracaoRepository.save(extracao);
-        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+
         Uploader.getInstance().removeThread(extracao.getId());
         extracao.setStatus(Status.ATIVA);
         extracaoRepository.save(extracao);
