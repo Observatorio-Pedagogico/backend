@@ -21,7 +21,7 @@ public class ExtracaoRequest {
 
     private Status status;
 
-    private Integer anoLetivo;
+    private String periodoLetivo;
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 

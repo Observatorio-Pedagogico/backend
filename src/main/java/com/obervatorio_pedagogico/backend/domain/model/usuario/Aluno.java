@@ -9,10 +9,12 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
 
@@ -29,6 +31,8 @@ import lombok.Setter;
 @Table(name = "t_aluno")
 public class Aluno extends Usuario implements Serializable {
 
+    private static final long serialVersionUID = 1L;
+
     @Column(name = "data_nascimento")
     private LocalDate dataNascimento;
 
@@ -44,17 +48,35 @@ public class Aluno extends Usuario implements Serializable {
     @Column(name = "situacao_ultimo_periodo")
     private String situacaoUltimoPeriodo;
     
-    @OneToMany(mappedBy = "aluno", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Nota> notas;
+    @OneToMany(
+        mappedBy = "aluno", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Nota> notas = new ArrayList<>();
     
-    @ManyToMany(mappedBy = "alunos", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    private List<Disciplina> disciplinas;
+    @ManyToMany(fetch = FetchType.EAGER,
+    cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE
+    },
+    mappedBy = "alunos")
+    private List<Disciplina> disciplinas = new ArrayList<>();
+
+    @OneToMany(
+        mappedBy = "aluno", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
         if (Objects.isNull(disciplinas))
             disciplinas = new ArrayList<>();
-        if (!hasDisciplina(disciplina))
+        if (!hasDisciplina(disciplina)) {
+            disciplina.addAluno(this);
             return disciplinas.add(disciplina);
+        }
         return false;
     }
 
@@ -72,31 +94,25 @@ public class Aluno extends Usuario implements Serializable {
         return false;
     }
 
-    public Boolean removeNota(Nota nota) {
+    public boolean removeNota(Nota nota) {
         if (Objects.isNull(notas))
             notas = new ArrayList<>();
         return notas.remove(nota);
     }
 
-    public Boolean hasDisciplina(Disciplina disciplina) {
+    public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .filter(disciplinaFiltro -> disciplinaFiltro.getId().equals(disciplina.getId()) 
-                || (disciplinaFiltro.getNome().equals(disciplina.getNome())
-                    && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo())
-                    && disciplinaFiltro.getProfessor().equals("ahhhhhhhh"))
-            ).findFirst()
-            .isPresent();
-    }
+            .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome())
+            && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
+    } 
     
-    public Boolean hasNota(Nota nota) {
+    public boolean hasNota(Nota nota) {
         return notas.stream()
-            .filter(notaFiltro -> notaFiltro.getId().equals(nota.getId()) 
-                || (notaFiltro.getValor().equals(nota.getValor())
-                    && notaFiltro.getOrdem().equals(nota.getOrdem())
-                    && notaFiltro.getTipo().equals(nota.getTipo())
-                    && notaFiltro.getDisciplina().equals(nota.getDisciplina())
-                    && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo()))
-            ).findFirst()
-            .isPresent();
+            .anyMatch(notaFiltro -> notaFiltro.getId().equals(nota.getId()) 
+            || (notaFiltro.getValor().equals(nota.getValor())
+                && notaFiltro.getOrdem().equals(nota.getOrdem())
+                && notaFiltro.getTipo().equals(nota.getTipo())
+                && notaFiltro.getDisciplina().equals(nota.getDisciplina())
+                && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo())));
     }
 }

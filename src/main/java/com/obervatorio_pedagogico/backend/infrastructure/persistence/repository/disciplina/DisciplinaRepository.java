@@ -9,5 +9,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 @Repository
 public interface DisciplinaRepository extends JpaRepository<Disciplina, Long> {
-    public Optional<Disciplina> findDisciplinaByCodigo(String codigo);
+    public Optional<Disciplina> findDisciplinaByCodigoAndPeriodoLetivo(String codigo, String periodoLetivo);
 }

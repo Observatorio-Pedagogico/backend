@@ -6,6 +6,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -13,10 +14,12 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
 
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 
 import lombok.AllArgsConstructor;
@@ -30,7 +33,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_disciplina")
-public class Disciplina {
+public class Disciplina implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -46,22 +51,33 @@ public class Disciplina {
     @Column(name = "periodo_matriz")
     private String periodoMatriz;
 
-    @Column(name = "preriodo_letivo")
+    @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
-    @Column(name = "id_professor")
-    private String professor; //TODO Criar objeto professor
-    
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER, 
+    cascade = {
+        CascadeType.MERGE, CascadeType.PERSIST
+    })
     @JoinTable(
             name = "t_disciplina_alunos",
             joinColumns = @JoinColumn (name = "id_disciplina"),
             inverseJoinColumns = @JoinColumn(name = "id_aluno")
     )
-    private List<Aluno> alunos;
+    private List<Aluno> alunos = new ArrayList<>();
 
-    @OneToMany(mappedBy = "disciplina", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Nota> notas;
+    @OneToMany(
+        mappedBy = "disciplina", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Nota> notas = new ArrayList<>();
+
+    @OneToMany(
+        mappedBy = "disciplina", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     public Boolean addAluno(Aluno aluno) {
         if (Objects.isNull(alunos))
@@ -71,18 +87,20 @@ public class Disciplina {
         return false;
     }
 
-    public Boolean removeAluno(Aluno aluno) {
+    public boolean removeAluno(Aluno aluno) {
         if (Objects.isNull(alunos))
             alunos = new ArrayList<>();
         return alunos.remove(aluno);
     }
 
-    public Boolean hasAlunos(Aluno aluno) {
+    public boolean hasAlunos(Aluno aluno) {
         return alunos.stream()
-            .filter(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()) 
-                || (alunoFiltro.getNome().equals(aluno.getNome())
-                    && alunoFiltro.getMatricula().equals(aluno.getMatricula()))
-            ).findFirst()
-            .isPresent();
+            .anyMatch(alunoFiltro ->(alunoFiltro.getNome().equals(aluno.getNome())
+            && alunoFiltro.getMatricula().equals(aluno.getMatricula())));
+    }
+
+    public boolean hasAlunosById(Aluno aluno) {
+        return alunos.stream()
+        .anyMatch(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()));
     }
 }

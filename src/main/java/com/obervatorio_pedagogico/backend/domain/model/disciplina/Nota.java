@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.domain.model.disciplina;
 
+import java.io.Serializable;
 import java.math.BigDecimal;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -8,6 +9,7 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Table;
@@ -25,7 +27,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_nota")
-public class Nota {
+public class Nota implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,11 +46,11 @@ public class Nota {
     @Column(name = "ordem")
     private Integer ordem;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_aluno")
     private Aluno aluno;
     
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_disciplina")
     private Disciplina disciplina;
 
