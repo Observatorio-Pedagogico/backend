@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.domain.model.extracao;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -34,7 +35,9 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_extracao")
-public class Extracao {
+public class Extracao implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -73,10 +76,10 @@ public class Extracao {
     private List<Disciplina> disciplinas = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
-        if (Objects.isNull(disciplinas))
-            disciplinas = new ArrayList<>();
-        if (!hasDisciplina(disciplina))
+        if (!hasDisciplina(disciplina)) {
+            disciplina.addExtracao(this);
             return disciplinas.add(disciplina);
+        }
         return false;
     }
 

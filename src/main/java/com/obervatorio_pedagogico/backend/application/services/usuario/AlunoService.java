@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.usuario.AlunoRepository;
 
@@ -31,5 +32,10 @@ public class AlunoService {
     public Optional<Aluno> buscarPorMatricula(String matricula) {
         Optional<Aluno> alunoSalvoOp = alunoRepository.findAlunoByMatricula(matricula);
         return alunoSalvoOp;
+    }
+
+    public void deleteById(Long id) {
+        Aluno aluno = alunoRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("Não foi possivel encontrar o aluno de " + id + "."));
+        alunoRepository.delete(aluno);
     }
 }

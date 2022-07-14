@@ -70,9 +70,7 @@ public class Aluno extends Usuario implements Serializable {
     )
     private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
-    public Boolean addDisciplina(Disciplina disciplina) {
-        if (Objects.isNull(disciplinas))
-            disciplinas = new ArrayList<>();
+    public boolean addDisciplina(Disciplina disciplina) {
         if (!hasDisciplina(disciplina)) {
             disciplina.addAluno(this);
             return disciplinas.add(disciplina);
@@ -80,13 +78,12 @@ public class Aluno extends Usuario implements Serializable {
         return false;
     }
 
-    public Boolean removeDisciplina(Disciplina disciplina) {
-        if (Objects.isNull(disciplinas))
-            disciplinas = new ArrayList<>();
+    public boolean removeDisciplina(Disciplina disciplina) {
+        disciplina.removeAluno(this);
         return disciplinas.remove(disciplina);
     }
 
-    public Boolean addNota(Nota nota) {
+    public boolean addNota(Nota nota) {
         if (Objects.isNull(notas))
             notas = new ArrayList<>();
         if (!hasNota(nota))
@@ -114,5 +111,9 @@ public class Aluno extends Usuario implements Serializable {
                 && notaFiltro.getTipo().equals(nota.getTipo())
                 && notaFiltro.getDisciplina().equals(nota.getDisciplina())
                 && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo())));
+    }
+
+    public boolean isPassivoDeletar() {
+        return this.disciplinas.isEmpty();
     }
 }

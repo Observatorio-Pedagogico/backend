@@ -104,9 +104,9 @@ public class ExtracaoController {
         .collect(Collectors.toList()));
     }
 
-    @DeleteMapping
-    public ResponseEntity<Response<String>> deletaExtracao(Long id){
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Response<String>> deletaExtracao(@PathVariable Long id){
         extracaoService.deletaExtracao(id);
-        return responseService.ok("Extracao deletada com sucesso.");
+        return responseService.ok("deletado-com-sucesso");
     }
 }

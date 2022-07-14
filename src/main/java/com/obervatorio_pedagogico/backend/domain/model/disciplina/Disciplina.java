@@ -1,15 +1,8 @@
 package com.obervatorio_pedagogico.backend.domain.model.disciplina;
 
-import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
-import javax.persistence.OneToMany;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -17,9 +10,15 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 
 import lombok.AllArgsConstructor;
@@ -79,17 +78,38 @@ public class Disciplina implements Serializable {
     )
     private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
+    @ManyToMany(fetch = FetchType.LAZY,
+    cascade = {
+        CascadeType.PERSIST,
+        CascadeType.MERGE
+    },mappedBy = "disciplinas")
+    private List<Extracao> extracoes = new ArrayList<>();
+
+    public boolean addExtracao(Extracao extracao) {
+        if(!hasExtracao(extracao)) {
+            System.out.println(this.getNome());
+            extracao.addDisciplina(this);
+            return extracoes.add(extracao);
+        }
+        return false;
+    }
+
+    public boolean removeExtracao(Extracao extracao) {
+        if(!hasExtracao(extracao)) {
+            extracao.removeDisciplina(this);
+            return extracoes.remove(extracao);
+        }
+        return false;
+    }
+
     public Boolean addAluno(Aluno aluno) {
-        if (Objects.isNull(alunos))
-            alunos = new ArrayList<>();
         if (!hasAlunos(aluno))
             return alunos.add(aluno);
         return false;
     }
 
     public boolean removeAluno(Aluno aluno) {
-        if (Objects.isNull(alunos))
-            alunos = new ArrayList<>();
+        aluno.removeDisciplina(this);
         return alunos.remove(aluno);
     }
 
@@ -102,5 +122,14 @@ public class Disciplina implements Serializable {
     public boolean hasAlunosById(Aluno aluno) {
         return alunos.stream()
         .anyMatch(alunoFiltro -> alunoFiltro.getId().equals(aluno.getId()));
+    }
+
+    public boolean hasExtracao(Extracao extracao) {
+        return extracoes.stream().anyMatch(extrcaoFiltro -> (extrcaoFiltro.getTitulo().equals(extracao.getTitulo())) 
+            && extrcaoFiltro.getPeriodoLetivo().equals(extracao.getPeriodoLetivo()));
+    }
+
+    public boolean isPassivoDeletar() {
+        return this.getExtracoes().isEmpty();
     }
 }

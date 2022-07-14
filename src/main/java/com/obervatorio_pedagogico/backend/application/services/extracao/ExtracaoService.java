@@ -84,12 +84,25 @@ public class ExtracaoService {
     }
 
     public void deletaExtracao(Long id){
-        
-        if(id.equals(null)){
-            throw new NaoEncontradoException("a extracao de " + id);
+
+        if (Objects.isNull(id)) {
+            throw new NaoEncontradoException("O id da extracao não pode ser null ");
         }
+
+        Extracao extracao = extracaoRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("A extracao de ".concat(id.toString()).concat(" não foi encontrado.")));
+
+        extracao.getDisciplinas().stream().forEach(disciplina -> {
+            disciplina.removeExtracao(extracao);
+
+            if (disciplina.isPassivoDeletar()) {
+                disciplinaService.deleteByIdDisciplina(disciplina.getId());
+            } else {
+                disciplinaService.salvar(disciplina);
+            }
+            
+        });
         
-        extracaoRepository.deleteById(id);
+        extracaoRepository.deleteById(extracao.getId());
     }
     
     private void validarFormatoArquivo(Arquivo arquivo) {
