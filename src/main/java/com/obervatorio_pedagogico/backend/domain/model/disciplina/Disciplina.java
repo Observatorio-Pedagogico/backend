@@ -87,7 +87,6 @@ public class Disciplina implements Serializable {
 
     public boolean addExtracao(Extracao extracao) {
         if(!hasExtracao(extracao)) {
-            System.out.println(this.getNome());
             extracao.addDisciplina(this);
             return extracoes.add(extracao);
         }
