@@ -20,7 +20,6 @@ import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
 
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -29,7 +28,6 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@EqualsAndHashCode(callSuper=false)
 @Entity
 @Table(name = "t_aluno")
 public class Aluno extends Usuario implements Serializable {
@@ -58,12 +56,10 @@ public class Aluno extends Usuario implements Serializable {
     )
     private List<Nota> notas = new ArrayList<>();
     
-    @ManyToMany(fetch = FetchType.EAGER,
+    @ManyToMany(fetch = FetchType.LAZY,
     cascade = {
-            CascadeType.PERSIST,
-            CascadeType.MERGE
-    },
-    mappedBy = "alunos")
+        CascadeType.REFRESH
+    },mappedBy = "alunos")
     private List<Disciplina> disciplinas = new ArrayList<>();
 
     @OneToMany(
@@ -102,7 +98,7 @@ public class Aluno extends Usuario implements Serializable {
 
     public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome())
+            .anyMatch(disciplinaFiltro -> disciplinaFiltro.getCodigo().equals(disciplina.getCodigo())
             && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
     } 
     

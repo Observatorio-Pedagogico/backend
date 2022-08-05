@@ -3,7 +3,6 @@ package com.obervatorio_pedagogico.backend.domain.model.extracao;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -67,14 +66,15 @@ public class Extracao implements Serializable {
     @ManyToMany(fetch = FetchType.LAZY,
     cascade = {
             CascadeType.PERSIST,
-            CascadeType.MERGE
+            CascadeType.MERGE,
+            CascadeType.DETACH
     })
     @JoinTable(
             name = "t_extracao_disciplina",
             joinColumns = @JoinColumn(name = "id_extracao"),
             inverseJoinColumns = @JoinColumn(name = "id_disciplina")
     )
-    private Collection<Disciplina> disciplinas = new ArrayList<>();
+    private List<Disciplina> disciplinas = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
         if (!hasDisciplina(disciplina)) {
@@ -85,13 +85,15 @@ public class Extracao implements Serializable {
 
     public Boolean removeDisciplina(Disciplina disciplina) {
         Integer tamanhoDisciplinas = this.disciplinas.size();
-        this.disciplinas = new ArrayList<>(this.disciplinas.stream().filter(disc -> !disc.getId().equals(disciplina.getId())).collect(Collectors.toList()));
+        this.disciplinas = this.disciplinas.stream().filter(disc -> !disc.getId().equals(disciplina.getId())).collect(Collectors.toList());
         return tamanhoDisciplinas > this.disciplinas.size();
     }
 
     public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-        .anyMatch(disciplinaFiltro -> disciplinaFiltro.getNome().equals(disciplina.getNome()));
+        .anyMatch((disciplinaFiltro) -> { return
+            disciplinaFiltro.getCodigo().equals(disciplina.getCodigo()) &&
+            disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo());});
     }
 
     public Optional<Disciplina> findDisciplinaByCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {

@@ -54,9 +54,11 @@ public class Disciplina implements Serializable {
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
-    @ManyToMany(fetch = FetchType.EAGER, 
+    @ManyToMany(fetch = FetchType.LAZY,
     cascade = {
-        CascadeType.MERGE, CascadeType.PERSIST
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.DETACH
     })
     @JoinTable(
             name = "t_disciplina_alunos",
@@ -81,8 +83,7 @@ public class Disciplina implements Serializable {
 
     @ManyToMany(fetch = FetchType.LAZY,
     cascade = {
-        CascadeType.PERSIST,
-        CascadeType.MERGE
+        CascadeType.REFRESH
     },mappedBy = "disciplinas")
     private List<Extracao> extracoes = new ArrayList<>();
 

@@ -4,12 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.stereotype.Service;
+
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
-import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
-import org.springframework.stereotype.Service;
 
 import lombok.AllArgsConstructor;
 
@@ -42,6 +42,9 @@ public class DisciplinaService {
         disciplinaAlunosClone.stream().forEach(aluno -> {
             disciplina.removeAluno(aluno);
             aluno.removeDisciplina(disciplina);
+            if (aluno.isPassivoDeletar()) {
+                alunoService.delete(aluno);
+            }
         });
 
         disciplinaRepository.deleteById(disciplina.getId());

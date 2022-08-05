@@ -20,8 +20,8 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSup
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
-import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
@@ -31,6 +31,7 @@ import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequ
 import lombok.AllArgsConstructor;
 
 @Service
+@AllArgsConstructor
 public class ExtracaoService {
 
     private final ExtracaoRepository extracaoRepository;
@@ -40,16 +41,6 @@ public class ExtracaoService {
     private final DisciplinaService disciplinaService;
 
     private final ModelMapperService modelMapperService;
-
-    private Integer cont = 0;
-    
-    public ExtracaoService(ExtracaoRepository extracaoRepository, AlunoService alunoService,
-            DisciplinaService disciplinaService, ModelMapperService modelMapperService) {
-        this.extracaoRepository = extracaoRepository;
-        this.alunoService = alunoService;
-        this.disciplinaService = disciplinaService;
-        this.modelMapperService = modelMapperService;
-    }
 
     public void cadastrar(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
@@ -156,7 +147,6 @@ public class ExtracaoService {
         extracao.setStatus(Status.ENVIANDO);
         extracao.setDataCadastro(LocalDateTime.now());
         extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
-        Disciplina[] putinha = new Disciplina[100000];
         extracaoRepository.save(extracao);
         for (int i = 1; i < sheet.getLastRowNum(); i++) {
             linha = sheet.getRow(i);
@@ -164,7 +154,7 @@ public class ExtracaoService {
             if (linha.getCell(0).getStringCellValue().isEmpty())
                 continue;
 
-            Disciplina disciplina = findDisciplina(linha, extracao,i,putinha);
+            Disciplina disciplina = findDisciplina(linha, extracao);
 
             if (
                 (
@@ -176,6 +166,7 @@ public class ExtracaoService {
                     aluno.addDisciplina(disciplina);
                     disciplina.addAluno(aluno);
                     disciplina.addExtracao(extracao);
+                    extracao.addDisciplina(disciplina);
                     aluno = null;
                     extracaoThread.setLinhaAtual(i);
                     continue;
@@ -188,18 +179,20 @@ public class ExtracaoService {
                 disciplina.addAluno(aluno);
             }
             disciplina.addExtracao(extracao);
+            extracao.addDisciplina(disciplina);
         }
-        System.out.println(extracao.getDisciplinas().size());
-        System.out.println(putinha[4973]);
         extracao.setStatus(Status.SALVANDO);
         extracaoRepository.save(extracao);
-
+        
         Uploader.getInstance().removeThread(extracao.getId());
+
+        extracao = extracaoRepository.findById(extracao.getId()).get();
         extracao.setStatus(Status.ATIVA);
         extracaoRepository.save(extracao);
+        System.out.println(Status.ATIVA);
     }
 
-    private Disciplina findDisciplina(Row linha, Extracao extracao,Integer i,Disciplina[] putinha) {
+    private Disciplina findDisciplina(Row linha, Extracao extracao) {
         Optional<Disciplina> disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
         
         if (disciplinaOp.isPresent()) return disciplinaOp.get();
@@ -212,8 +205,6 @@ public class ExtracaoService {
         disciplina.setCodigo(linha.getCell(4).getStringCellValue());
         disciplina.setNome(linha.getCell(5).getStringCellValue());
         disciplina.setPeriodoLetivo(definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
-        extracao.addDisciplina(disciplina);
-        putinha[i] = disciplina;
         return disciplina;
     }
 
