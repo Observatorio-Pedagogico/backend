@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -30,7 +31,6 @@ import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequ
 import lombok.AllArgsConstructor;
 
 @Service
-@AllArgsConstructor
 public class ExtracaoService {
 
     private final ExtracaoRepository extracaoRepository;
@@ -40,7 +40,17 @@ public class ExtracaoService {
     private final DisciplinaService disciplinaService;
 
     private final ModelMapperService modelMapperService;
+
+    private Integer cont = 0;
     
+    public ExtracaoService(ExtracaoRepository extracaoRepository, AlunoService alunoService,
+            DisciplinaService disciplinaService, ModelMapperService modelMapperService) {
+        this.extracaoRepository = extracaoRepository;
+        this.alunoService = alunoService;
+        this.disciplinaService = disciplinaService;
+        this.modelMapperService = modelMapperService;
+    }
+
     public void cadastrar(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
         processar(extracao, extracaoRequest.getArquivo());
@@ -84,22 +94,18 @@ public class ExtracaoService {
     }
 
     public void deletaExtracao(Long id){
-
         if (Objects.isNull(id)) {
             throw new NaoEncontradoException("O id da extracao não pode ser null ");
         }
 
         Extracao extracao = extracaoRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("A extracao de ".concat(id.toString()).concat(" não foi encontrado.")));
-
-        extracao.getDisciplinas().stream().forEach(disciplina -> {
+        List<Disciplina> disciplinasExtracoesRemover = new ArrayList<>(extracao.getDisciplinas());
+        disciplinasExtracoesRemover.stream().forEach(disciplina -> {
             disciplina.removeExtracao(extracao);
-
+            extracao.removeDisciplina(disciplina);
             if (disciplina.isPassivoDeletar()) {
-                disciplinaService.deleteByIdDisciplina(disciplina.getId());
-            } else {
-                disciplinaService.salvar(disciplina);
+                disciplinaService.deleteDisciplina(disciplina);
             }
-            
         });
         
         extracaoRepository.deleteById(extracao.getId());
@@ -150,6 +156,7 @@ public class ExtracaoService {
         extracao.setStatus(Status.ENVIANDO);
         extracao.setDataCadastro(LocalDateTime.now());
         extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+        Disciplina[] putinha = new Disciplina[100000];
         extracaoRepository.save(extracao);
         for (int i = 1; i < sheet.getLastRowNum(); i++) {
             linha = sheet.getRow(i);
@@ -157,7 +164,7 @@ public class ExtracaoService {
             if (linha.getCell(0).getStringCellValue().isEmpty())
                 continue;
 
-            Disciplina disciplina = findDisciplina(linha, extracao);
+            Disciplina disciplina = findDisciplina(linha, extracao,i,putinha);
 
             if (
                 (
@@ -167,19 +174,23 @@ public class ExtracaoService {
             {
                 if (Objects.nonNull(aluno)) {
                     aluno.addDisciplina(disciplina);
-                    extracao.addDisciplina(disciplina);
+                    disciplina.addAluno(aluno);
+                    disciplina.addExtracao(extracao);
                     aluno = null;
                     extracaoThread.setLinhaAtual(i);
                     continue;
                 }
                 aluno = findAluno(linha, extracao);
-                System.out.println(aluno);
+                System.out.println(aluno.getNome());
             }
             if (Objects.nonNull(aluno)) {
                 aluno.addDisciplina(disciplina);
+                disciplina.addAluno(aluno);
             }
-            extracao.addDisciplina(disciplina);
+            disciplina.addExtracao(extracao);
         }
+        System.out.println(extracao.getDisciplinas().size());
+        System.out.println(putinha[4973]);
         extracao.setStatus(Status.SALVANDO);
         extracaoRepository.save(extracao);
 
@@ -188,7 +199,7 @@ public class ExtracaoService {
         extracaoRepository.save(extracao);
     }
 
-    private Disciplina findDisciplina(Row linha, Extracao extracao) {
+    private Disciplina findDisciplina(Row linha, Extracao extracao,Integer i,Disciplina[] putinha) {
         Optional<Disciplina> disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
         
         if (disciplinaOp.isPresent()) return disciplinaOp.get();
@@ -201,7 +212,8 @@ public class ExtracaoService {
         disciplina.setCodigo(linha.getCell(4).getStringCellValue());
         disciplina.setNome(linha.getCell(5).getStringCellValue());
         disciplina.setPeriodoLetivo(definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
-
+        extracao.addDisciplina(disciplina);
+        putinha[i] = disciplina;
         return disciplina;
     }
 

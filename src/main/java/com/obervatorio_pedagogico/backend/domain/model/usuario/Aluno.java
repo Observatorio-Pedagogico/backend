@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -19,14 +20,16 @@ import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
 
 import lombok.AllArgsConstructor;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode(callSuper=false)
 @Entity
 @Table(name = "t_aluno")
 public class Aluno extends Usuario implements Serializable {
@@ -72,15 +75,15 @@ public class Aluno extends Usuario implements Serializable {
 
     public boolean addDisciplina(Disciplina disciplina) {
         if (!hasDisciplina(disciplina)) {
-            disciplina.addAluno(this);
             return disciplinas.add(disciplina);
         }
         return false;
     }
 
     public boolean removeDisciplina(Disciplina disciplina) {
-        disciplina.removeAluno(this);
-        return disciplinas.remove(disciplina);
+        Integer tamanhoDisciplinas = this.disciplinas.size();
+        this.disciplinas = this.disciplinas.stream().filter(disc -> !disc.getId().equals(disciplina.getId())).collect(Collectors.toList());
+        return tamanhoDisciplinas > this.disciplinas.size();
     }
 
     public boolean addNota(Nota nota) {
@@ -92,9 +95,9 @@ public class Aluno extends Usuario implements Serializable {
     }
 
     public boolean removeNota(Nota nota) {
-        if (Objects.isNull(notas))
-            notas = new ArrayList<>();
-        return notas.remove(nota);
+        Integer tamanhoNotas = this.notas.size();
+        this.notas = this.notas.stream().filter(not -> !not.getId().equals(nota.getId())).collect(Collectors.toList());
+        return tamanhoNotas > this.notas.size();
     }
 
     public boolean hasDisciplina(Disciplina disciplina) {

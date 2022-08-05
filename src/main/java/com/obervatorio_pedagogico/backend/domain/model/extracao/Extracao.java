@@ -3,9 +3,10 @@ package com.obervatorio_pedagogico.backend.domain.model.extracao;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -73,20 +74,19 @@ public class Extracao implements Serializable {
             joinColumns = @JoinColumn(name = "id_extracao"),
             inverseJoinColumns = @JoinColumn(name = "id_disciplina")
     )
-    private List<Disciplina> disciplinas = new ArrayList<>();
+    private Collection<Disciplina> disciplinas = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
         if (!hasDisciplina(disciplina)) {
-            disciplina.addExtracao(this);
             return disciplinas.add(disciplina);
         }
         return false;
     }
 
     public Boolean removeDisciplina(Disciplina disciplina) {
-        if (Objects.isNull(disciplinas))
-            disciplinas = new ArrayList<>();
-        return disciplinas.remove(disciplina);
+        Integer tamanhoDisciplinas = this.disciplinas.size();
+        this.disciplinas = new ArrayList<>(this.disciplinas.stream().filter(disc -> !disc.getId().equals(disciplina.getId())).collect(Collectors.toList()));
+        return tamanhoDisciplinas > this.disciplinas.size();
     }
 
     public boolean hasDisciplina(Disciplina disciplina) {

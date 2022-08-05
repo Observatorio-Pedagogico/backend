@@ -7,6 +7,7 @@ import java.util.Optional;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
 import org.springframework.stereotype.Service;
 
@@ -36,19 +37,13 @@ public class DisciplinaService {
         return disciplinaSalvaOp;
     }
 
-    public void deleteByIdDisciplina(Long id) {
-        Disciplina disciplina = disciplinaRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("Não foi possivel encontrar o ".concat(id.toString())));
-
-        disciplina.getAlunos().stream().forEach(aluno -> {
+    public void deleteDisciplina(Disciplina disciplina) {
+        List<Aluno> disciplinaAlunosClone = new ArrayList<>(disciplina.getAlunos());
+        disciplinaAlunosClone.stream().forEach(aluno -> {
+            disciplina.removeAluno(aluno);
             aluno.removeDisciplina(disciplina);
-            
-            if (disciplina.isPassivoDeletar()) {
-                alunoService.deleteById(aluno.getId());
-            } else {
-                alunoService.salvar(aluno);
-            }
         });
 
-        disciplinaRepository.deleteById(id);
+        disciplinaRepository.deleteById(disciplina.getId());
     }
 }

@@ -3,6 +3,7 @@ package com.obervatorio_pedagogico.backend.domain.model.disciplina;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -87,18 +88,15 @@ public class Disciplina implements Serializable {
 
     public boolean addExtracao(Extracao extracao) {
         if(!hasExtracao(extracao)) {
-            extracao.addDisciplina(this);
             return extracoes.add(extracao);
         }
         return false;
     }
 
     public boolean removeExtracao(Extracao extracao) {
-        if(!hasExtracao(extracao)) {
-            extracao.removeDisciplina(this);
-            return extracoes.remove(extracao);
-        }
-        return false;
+        Integer tamanhoExtracoes = this.extracoes.size();
+        this.extracoes = extracoes.stream().filter(ext -> !ext.getId().equals(extracao.getId())).collect(Collectors.toList());
+        return tamanhoExtracoes > this.extracoes.size();
     }
 
     public Boolean addAluno(Aluno aluno) {
@@ -108,8 +106,9 @@ public class Disciplina implements Serializable {
     }
 
     public boolean removeAluno(Aluno aluno) {
-        aluno.removeDisciplina(this);
-        return alunos.remove(aluno);
+        Integer tamanhoAlunos = this.alunos.size();
+        this.alunos = alunos.stream().filter(alu -> !alu.getId().equals(aluno.getId())).collect(Collectors.toList());
+        return tamanhoAlunos > this.alunos.size();
     }
 
     public boolean hasAlunos(Aluno aluno) {

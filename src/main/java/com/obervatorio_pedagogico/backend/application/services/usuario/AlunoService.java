@@ -36,6 +36,6 @@ public class AlunoService {
 
     public void deleteById(Long id) {
         Aluno aluno = alunoRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("Não foi possivel encontrar o aluno de " + id + "."));
-        alunoRepository.delete(aluno);
+        alunoRepository.deleteById(aluno.getId());
     }
 }
