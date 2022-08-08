@@ -11,9 +11,9 @@ public class ExtracaoThread {
     
     private Integer porcentagemDeEnvio = 0;
 
-    private Integer totalLinhas = 0;
+    private Integer totalLinhas = 1;
 
-    private Integer linhaAtual = 1;
+    private Integer linhaAtual = 0;
 
     private Extracao extracao;
 

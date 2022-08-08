@@ -11,22 +11,29 @@ import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
+import com.obervatorio_pedagogico.backend.domain.exceptions.FalhaArquivoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
+import com.obervatorio_pedagogico.backend.domain.model.customMultipartFile.CustomMultipartFile;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
+import com.obervatorio_pedagogico.backend.infrastructure.rabbitmq.MQConfig;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.Arquivo;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ArquivoQueue;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequestQueue;
 
 import lombok.AllArgsConstructor;
 
@@ -42,8 +49,38 @@ public class ExtracaoService {
 
     private final ModelMapperService modelMapperService;
 
-    public void cadastrar(ExtracaoRequest extracaoRequest) {
+    private final RabbitTemplate rabbitTemplate;
+
+    public void adicionarNaFila(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
+        extracao.setStatus(Status.AGUARDANDO_PROCESSAMENTO);
+
+        ExtracaoRequestQueue extracaoRequestAux = modelMapperService.convert(extracao, ExtracaoRequestQueue.class);
+        ArquivoQueue arquivoQueue;
+        try {
+            arquivoQueue = new ArquivoQueue(
+                extracaoRequest.getArquivo().getConteudo().getBytes(),
+                extracaoRequest.getArquivo().getConteudo().getContentType()
+            );
+        } catch (IOException e) {
+            throw new FalhaArquivoException();
+        }
+        extracaoRequestAux.setArquivo(arquivoQueue);
+        ExtracaoThread thread = new ExtracaoThread();
+        thread.setExtracao(extracao);
+        Uploader.getInstance().addThread(thread);
+
+        rabbitTemplate.convertAndSend(MQConfig.EXTRACAO_EXCHANGE, MQConfig.ROUTING_KEY_ENTRADA, extracaoRequestAux);
+    }
+
+    @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
+    public void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
+        Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
+        ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
+
+        CustomMultipartFile customMultipartFile = new CustomMultipartFile(extracaoRequestQueue.getArquivo().getConteudoArquivo());
+
+        extracaoRequest.getArquivo().setConteudo(customMultipartFile);
         processar(extracao, extracaoRequest.getArquivo());
     }
 
@@ -124,25 +161,31 @@ public class ExtracaoService {
     }
 
     public void iniciarThread(Extracao extracao, Sheet sheet) {
-        ExtracaoThread thread = new ExtracaoThread();
-        Uploader.getInstance().addThread(thread);
+        ExtracaoThread thread;
+        if (Uploader.getInstance().getThreads().size() > 0) {
+            thread = Uploader.getInstance().getThreads().get(0);
+            extracao = thread.getExtracao();
+        } else {
+            thread = new ExtracaoThread();
+            thread.setExtracao(extracao);
+            Uploader.getInstance().addThread(thread);
+        }
+        cadastrarExtracao(extracao, sheet, thread);
 
-        thread.setRunnable(
-            new Runnable() {
-                @Override
-                public void run() {
-                    cadastrarExtracao(extracao, sheet, thread);
-                }
-            }
-        );
+        // thread.setRunnable(
+        //     new Runnable() {
+        //         @Override
+        //         public void run() {
+        //             cadastrarExtracao(extracao, sheet, thread);
+        //         }
+        //     }
+        // );
     }
 
     private void cadastrarExtracao(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
         Row linha;
         Aluno aluno = null;
-
         extracaoThread.setTotalLinhas(sheet.getLastRowNum());
-        extracaoThread.setExtracao(extracao);
 
         extracao.setStatus(Status.ENVIANDO);
         extracao.setDataCadastro(LocalDateTime.now());
@@ -163,8 +206,8 @@ public class ExtracaoService {
                 ) && i < sheet.getLastRowNum()-1)
             {
                 if (Objects.nonNull(aluno)) {
-                    aluno.addDisciplina(disciplina);
                     disciplina.addAluno(aluno);
+                    aluno.addDisciplina(disciplina);
                     disciplina.addExtracao(extracao);
                     extracao.addDisciplina(disciplina);
                     aluno = null;
@@ -175,8 +218,8 @@ public class ExtracaoService {
                 System.out.println(aluno.getNome());
             }
             if (Objects.nonNull(aluno)) {
-                aluno.addDisciplina(disciplina);
                 disciplina.addAluno(aluno);
+                aluno.addDisciplina(disciplina);
             }
             disciplina.addExtracao(extracao);
             extracao.addDisciplina(disciplina);
@@ -193,12 +236,12 @@ public class ExtracaoService {
     }
 
     private Disciplina findDisciplina(Row linha, Extracao extracao) {
-        Optional<Disciplina> disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
-        
+        Optional<Disciplina> disciplinaOp = extracao.findDisciplinaByCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
+
         if (disciplinaOp.isPresent()) return disciplinaOp.get();
 
-        disciplinaOp = extracao.findDisciplinaByCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
-
+        disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linha.getCell(4).getStringCellValue(), definirPeriodoLetivo(linha.getCell(7).getStringCellValue(), linha.getCell(8).getStringCellValue()));
+        
         if (disciplinaOp.isPresent()) return disciplinaOp.get();
 
         Disciplina disciplina = new Disciplina();
@@ -209,11 +252,11 @@ public class ExtracaoService {
     }
 
     private Aluno findAluno(Row linha, Extracao extracao) {
-        Optional<Aluno> alunoOp = alunoService.buscarPorMatricula(linha.getCell(1).getStringCellValue());
+        Optional<Aluno> alunoOp = extracao.findAlunoByMatricula(linha.getCell(1).getStringCellValue());
 
         if (alunoOp.isPresent()) return alunoOp.get();
 
-        alunoOp = extracao.findAlunoByMatricula(linha.getCell(1).getStringCellValue());
+        alunoOp = alunoService.buscarPorMatricula(linha.getCell(1).getStringCellValue());
 
         if (alunoOp.isPresent()) return alunoOp.get();
 

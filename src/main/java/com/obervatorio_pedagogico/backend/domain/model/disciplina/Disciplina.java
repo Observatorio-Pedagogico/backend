@@ -58,6 +58,7 @@ public class Disciplina implements Serializable {
     cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE,
+            CascadeType.REFRESH,
             CascadeType.DETACH
     })
     @JoinTable(
@@ -82,9 +83,7 @@ public class Disciplina implements Serializable {
     private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
-    cascade = {
-        CascadeType.REFRESH
-    },mappedBy = "disciplinas")
+    mappedBy = "disciplinas")
     private List<Extracao> extracoes = new ArrayList<>();
 
     public boolean addExtracao(Extracao extracao) {

@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
 
+import java.io.Serializable;
 import java.util.Objects;
 
 import org.springframework.web.multipart.MultipartFile;
@@ -13,7 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Arquivo {
+public class Arquivo implements Serializable {
 
     private final String XLS_CODE = "application/vnd.ms-excel";
     private final String XLSX_CODE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";

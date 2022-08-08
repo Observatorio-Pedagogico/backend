@@ -57,9 +57,7 @@ public class Aluno extends Usuario implements Serializable {
     private List<Nota> notas = new ArrayList<>();
     
     @ManyToMany(fetch = FetchType.LAZY,
-    cascade = {
-        CascadeType.REFRESH
-    },mappedBy = "alunos")
+    mappedBy = "alunos")
     private List<Disciplina> disciplinas = new ArrayList<>();
 
     @OneToMany(

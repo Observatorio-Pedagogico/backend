@@ -44,7 +44,7 @@ public class ExtracaoController {
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest) {
-        extracaoService.cadastrar(extracaoRequest);
+        extracaoService.adicionarNaFila(extracaoRequest);
         return responseService.create(null);
     }
 
@@ -67,7 +67,7 @@ public class ExtracaoController {
         return responseService.ok(responseList);
     }
 
-    @GetMapping("/get-todos")
+    @GetMapping()
     public ResponseEntity<Response<List<ExtracaoResponseResumido>>> getTodos(){
         List<Extracao> extracoes = extracaoService.getTodos();
         

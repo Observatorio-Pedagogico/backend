@@ -41,7 +41,7 @@ public class Extracao implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(name = "titulo")
@@ -67,6 +67,7 @@ public class Extracao implements Serializable {
     cascade = {
             CascadeType.PERSIST,
             CascadeType.MERGE,
+            CascadeType.REFRESH,
             CascadeType.DETACH
     })
     @JoinTable(
@@ -121,8 +122,12 @@ public class Extracao implements Serializable {
         return status.isEnviando();
     }
 
+    public boolean isAguardandoProcessamento() {
+        return status.isAguardandoProcessamento();
+    }
+
     public enum Status {
-        ATIVA, CANCELADA, ENVIANDO, SALVANDO;
+        ATIVA, CANCELADA, ENVIANDO, AGUARDANDO_PROCESSAMENTO, SALVANDO;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -134,6 +139,10 @@ public class Extracao implements Serializable {
 
         public Boolean isEnviando() {
             return ENVIANDO.equals(this);
+        }
+
+        public Boolean isAguardandoProcessamento() {
+            return AGUARDANDO_PROCESSAMENTO.equals(this);
         }
 
         public Boolean isSalvando() {
