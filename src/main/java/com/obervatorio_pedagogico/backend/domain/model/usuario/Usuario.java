@@ -10,13 +10,15 @@ import javax.persistence.OneToOne;
 
 import com.obervatorio_pedagogico.backend.domain.model.endereco.Endereco;
 
-import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 @MappedSuperclass
 public abstract class Usuario {
 
@@ -37,9 +39,16 @@ public abstract class Usuario {
     @Column(name = "sexo")
     private Sexo sexo;
 
+    @Column(name = "permitido")
+    private Boolean permitido;
+
     @OneToOne
     @JoinColumn(name = "id_endereco")
     private Endereco endereco;
+
+    public boolean isPermitido() {
+        return this.getPermitido();
+    }
 
     public enum Sexo {
         MASCULINO, FEMININO
