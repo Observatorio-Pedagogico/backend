@@ -11,8 +11,8 @@ import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.
 
 import lombok.AllArgsConstructor;
 
-@AllArgsConstructor
 @Service
+@AllArgsConstructor
 public class AlunoService {
     private final AlunoRepository alunoRepository;
 

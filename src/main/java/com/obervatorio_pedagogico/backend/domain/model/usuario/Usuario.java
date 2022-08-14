@@ -33,21 +33,31 @@ public abstract class Usuario {
     @Column(name = "email")
     protected String email;
 
+    @Column(name = "senha")
+    protected String senha;
+
     @Column(name = "nome")
     protected String nome;
 
     @Column(name = "sexo")
-    private Sexo sexo;
+    protected Sexo sexo;
 
     @Column(name = "permitido")
-    private Boolean permitido;
+    protected Boolean permitido = false;
+
+    @Column(name = "espera_cadastro")
+    protected Boolean esperaCadastro = true;
 
     @OneToOne
     @JoinColumn(name = "id_endereco")
-    private Endereco endereco;
+    protected Endereco endereco;
 
     public boolean isPermitido() {
         return this.getPermitido();
+    }
+
+    public boolean isEsperaCadastro() {
+        return this.getEsperaCadastro();
     }
 
     public enum Sexo {

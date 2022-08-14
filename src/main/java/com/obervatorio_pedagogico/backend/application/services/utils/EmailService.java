@@ -7,7 +7,10 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailService {
-    private List<String> dominiosPermitidos = Arrays.asList("academico.ifpb.edu.br");
+    private List<String> dominiosPermitidos = Arrays.asList(
+        "academico.ifpb.edu.br",
+        "ifpb.edu.br"
+    );
 
     public boolean isDominioValido(String email) {
         String dominioEmail = email.split("@")[1];
