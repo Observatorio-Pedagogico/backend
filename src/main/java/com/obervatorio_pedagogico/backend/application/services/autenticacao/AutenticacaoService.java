@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.application.services.autenticacao;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,6 +16,8 @@ import com.obervatorio_pedagogico.backend.application.services.usuario.Professor
 import com.obervatorio_pedagogico.backend.application.services.usuario.UsuarioService;
 import com.obervatorio_pedagogico.backend.application.services.utils.EmailService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.LoginInvalidoException;
+import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioEmailDominioInvalido;
+import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioJaExistenteException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoPermitidoException;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
@@ -24,9 +27,9 @@ import com.obervatorio_pedagogico.backend.infrastructure.security.auth.SharUtils
 import com.obervatorio_pedagogico.backend.infrastructure.security.service.SecurityService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.AuthResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.UsuarioDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.UsuarioDto.Tipo;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto.Tipo;
 
 import lombok.AllArgsConstructor;
 
@@ -55,7 +58,7 @@ public class AutenticacaoService {
     public AuthResponse login(LoginRequest authRequest) {
         
         if (!emailService.isDominioValido(authRequest.getEmail())) {
-            throw new RuntimeException("Dominio inválido");
+            throw new UsuarioEmailDominioInvalido();
         }
 
         String senhaShar = null;
@@ -74,7 +77,7 @@ public class AutenticacaoService {
 
         Optional<Usuario> usuarioOp = usuarioService.buscarUsuarioByEmail(authRequest.getEmail());
 
-        if (usuarioOp.isPresent() && !usuarioOp.get().isPermitido()) {
+        if (usuarioOp.isPresent() && !usuarioOp.get().isAtivo()) {
             throw new UsuarioNaoPermitidoException();
         }
         
@@ -85,34 +88,34 @@ public class AutenticacaoService {
         return new AuthResponse(token);
     }
 
-    public Usuario cadastrar(UsuarioDto usuarioDto) {
-        this.validarCadastro(usuarioDto);
+    public Usuario cadastrar(CadastroUsuarioDto cadastroUsuarioDto) {
+        this.validarCadastro(cadastroUsuarioDto);
 
         boolean isPrimeiro = !usuarioService.existeUsuarioCadastrado();
 
         String senha = null;
         try {
-            senha = sharUtils.shar256(usuarioDto.getSenha());
+            senha = sharUtils.shar256(cadastroUsuarioDto.getSenha());
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
 
-        if (usuarioDto.getTipo().equals(Tipo.COPED)) {
-            FuncionarioCoped funcionarioCoped = modelMapperService.convert(usuarioDto, FuncionarioCoped.class);
+        if (cadastroUsuarioDto.getTipo().equals(Tipo.COPED)) {
+            FuncionarioCoped funcionarioCoped = modelMapperService.convert(cadastroUsuarioDto, FuncionarioCoped.class);
             funcionarioCoped.setSenha(senha);
 
             if (isPrimeiro) {
-                funcionarioCoped.setPermitido(true);
+                funcionarioCoped.setAtivo(true);
                 funcionarioCoped.setEsperaCadastro(false);
             }
 
             return funcionarioCopedService.salvar(funcionarioCoped);
         } else {
-            Professor professor = modelMapperService.convert(usuarioDto, Professor.class);
+            Professor professor = modelMapperService.convert(cadastroUsuarioDto, Professor.class);
             professor.setSenha(senha);
 
             if (isPrimeiro) {
-                professor.setPermitido(true);
+                professor.setAtivo(true);
                 professor.setEsperaCadastro(false);
             }
 
@@ -120,16 +123,32 @@ public class AutenticacaoService {
         }
     }
 
-    private void validarCadastro(UsuarioDto usuarioDto) {
-        if (!emailService.isDominioValido(usuarioDto.getEmail())) {
-            throw new RuntimeException("Dominio inválido");
+    public FuncionarioCoped ativarFuncionarioCoped(Long id) {
+        return funcionarioCopedService.ativarFuncionarioCoped(id);
+    }
+
+    public Professor ativarProfessor(Long id) {
+        return professorService.ativarProfessor(id);
+    }
+
+    public List<FuncionarioCoped> listarEsperaCadastroCoped() {
+        return funcionarioCopedService.listarEsperaCadastro();
+    }
+
+    public List<Professor> listarEsperaCadastroProfessor() {
+        return professorService.listarEsperaCadastro();
+    }
+
+    private void validarCadastro(CadastroUsuarioDto cadastroUsuarioDto) {
+        if (!emailService.isDominioValido(cadastroUsuarioDto.getEmail())) {
+            throw new UsuarioEmailDominioInvalido();
         }
 
         if (
-            professorService.buscarPorEmail(usuarioDto.getEmail()).isPresent() || 
-            funcionarioCopedService.buscarPorEmail(usuarioDto.getEmail()).isPresent()
+            professorService.buscarPorEmail(cadastroUsuarioDto.getEmail()).isPresent() || 
+            funcionarioCopedService.buscarPorEmail(cadastroUsuarioDto.getEmail()).isPresent()
         ) {
-            throw new RuntimeException("Já existe");
+            throw new UsuarioJaExistenteException();
         }
     }
 }

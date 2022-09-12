@@ -1,9 +1,11 @@
 package com.obervatorio_pedagogico.backend.application.services.usuario;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.usuario.FuncionarioCopedRepository;
 
@@ -27,7 +29,27 @@ public class FuncionarioCopedService {
         return funcionarioCopedRepository.findFuncionarioCopedByEmail(email);
     }
 
+    public Optional<FuncionarioCoped> buscarPorId(Long id) {
+        return funcionarioCopedRepository.findById(id);
+    }
+
     public long count() {
         return funcionarioCopedRepository.count();
+    }
+
+    public FuncionarioCoped ativarFuncionarioCoped(Long id) {
+        Optional<FuncionarioCoped> funcionarioCoped = buscarPorId(id);
+
+        if (!funcionarioCoped.isPresent()) {
+            throw new NaoEncontradoException();
+        }
+
+        funcionarioCoped.get().setAtivo(true);
+        funcionarioCoped.get().setEsperaCadastro(false);
+        return salvar(funcionarioCoped.get());
+    }
+
+    public List<FuncionarioCoped> listarEsperaCadastro() {
+        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue();
     }
 }

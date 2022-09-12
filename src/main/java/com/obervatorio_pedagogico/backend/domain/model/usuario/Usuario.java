@@ -42,8 +42,8 @@ public abstract class Usuario {
     @Column(name = "sexo")
     protected Sexo sexo;
 
-    @Column(name = "permitido")
-    protected Boolean permitido = false;
+    @Column(name = "ativo")
+    protected Boolean ativo = false;
 
     @Column(name = "espera_cadastro")
     protected Boolean esperaCadastro = true;
@@ -52,8 +52,8 @@ public abstract class Usuario {
     @JoinColumn(name = "id_endereco")
     protected Endereco endereco;
 
-    public boolean isPermitido() {
-        return this.getPermitido();
+    public boolean isAtivo() {
+        return this.getAtivo();
     }
 
     public boolean isEsperaCadastro() {

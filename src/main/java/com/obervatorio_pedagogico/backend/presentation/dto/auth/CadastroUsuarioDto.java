@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.usuario;
+package com.obervatorio_pedagogico.backend.presentation.dto.auth;
 
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 
@@ -11,11 +11,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class UsuarioDto {
+public class CadastroUsuarioDto {
 
     private String matricula;
 
     private String email;
+
+    private String senha;
 
     private String nome;
 

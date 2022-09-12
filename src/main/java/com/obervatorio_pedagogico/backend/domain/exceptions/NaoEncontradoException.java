@@ -11,7 +11,7 @@ import com.obervatorio_pedagogico.backend.infrastructure.exceptions.annotation.B
 )
 public class NaoEncontradoException extends RuntimeException {
     
-    private static final String MENSAGEM = "A Extração";
+    private static final String MENSAGEM = "";
 
     public NaoEncontradoException() {
         super(MENSAGEM);
