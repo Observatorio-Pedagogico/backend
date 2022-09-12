@@ -25,3 +25,14 @@ services:
             - ./target/hub-0.0.1-SNAPSHOT.jar:/xpto/backend.jar
         links:
             - db-api
+            - rabbitmq
+
+    rabbitmq:
+      container_name: rabbitmq
+      image: rabbitmq:3.7.5-management-alpine
+      ports:
+          - "5672:5672"
+          - "15672:15672"
+      environment:
+          RABBITMQ_DEFAULT_USER: user
+          RABBITMQ_DEFAULT_PASS: user

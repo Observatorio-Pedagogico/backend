@@ -1,6 +1,5 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
 
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
@@ -14,19 +13,19 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExtracaoRequest implements Serializable {
+public class ExtracaoResponseResumido {
 
     private Long id;
 
-    private String titulo;
+    private Integer totalLinhas = 0;
 
-    private String descricao;
+    private String titulo;
 
     private Status status;
 
     private String periodoLetivo;
 
-    private LocalDateTime ultimaDataHoraAtualizacao;
+    private LocalDateTime dataCadastro;
 
-    private Arquivo arquivo;
+    private LocalDateTime ultimaDataHoraAtualizacao;
 }

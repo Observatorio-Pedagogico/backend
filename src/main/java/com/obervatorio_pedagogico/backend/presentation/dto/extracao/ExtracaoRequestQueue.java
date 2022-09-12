@@ -14,7 +14,7 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExtracaoRequest implements Serializable {
+public class ExtracaoRequestQueue implements Serializable {
 
     private Long id;
 
@@ -28,5 +28,5 @@ public class ExtracaoRequest implements Serializable {
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private Arquivo arquivo;
+    private ArquivoQueue arquivo;
 }

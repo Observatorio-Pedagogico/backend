@@ -8,15 +8,17 @@ import javax.persistence.JoinColumn;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.OneToOne;
 
-import com.obervatorio_pedagogico.backend.domain.model.endereco.EnderecoModel;
+import com.obervatorio_pedagogico.backend.domain.model.endereco.Endereco;
 
-import lombok.EqualsAndHashCode;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
 @MappedSuperclass
 public abstract class Usuario {
 
@@ -31,15 +33,32 @@ public abstract class Usuario {
     @Column(name = "email")
     protected String email;
 
+    @Column(name = "senha")
+    protected String senha;
+
     @Column(name = "nome")
     protected String nome;
 
     @Column(name = "sexo")
-    private Sexo sexo;
+    protected Sexo sexo;
+
+    @Column(name = "permitido")
+    protected Boolean permitido = false;
+
+    @Column(name = "espera_cadastro")
+    protected Boolean esperaCadastro = true;
 
     @OneToOne
     @JoinColumn(name = "id_endereco")
-    private EnderecoModel endereco;
+    protected Endereco endereco;
+
+    public boolean isPermitido() {
+        return this.getPermitido();
+    }
+
+    public boolean isEsperaCadastro() {
+        return this.getEsperaCadastro();
+    }
 
     public enum Sexo {
         MASCULINO, FEMININO

@@ -1,13 +1,18 @@
 package com.obervatorio_pedagogico.backend.domain.model.extracao;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -17,6 +22,7 @@ import javax.persistence.ManyToMany;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -29,11 +35,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_extracao")
-public class Extracao {
+public class Extracao implements Serializable {
+
+    private static final long serialVersionUID = 1L;
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id",nullable = false)
+    @Column(name = "id", nullable = false)
     private Long id;
 
     @Column(name = "titulo")
@@ -49,49 +57,77 @@ public class Extracao {
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
     
+    @Column(name = "data_cadastro")
+    private LocalDateTime dataCadastro;
+
     @Column(name = "ultima_data_hora_atualizacao")
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY,
+    cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.REFRESH,
+            CascadeType.DETACH
+    })
     @JoinTable(
             name = "t_extracao_disciplina",
             joinColumns = @JoinColumn(name = "id_extracao"),
             inverseJoinColumns = @JoinColumn(name = "id_disciplina")
     )
-    private List<Disciplina> disciplinas;
+    private List<Disciplina> disciplinas = new ArrayList<>();
 
     public Boolean addDisciplina(Disciplina disciplina) {
-        if (Objects.isNull(disciplinas))
-            disciplinas = new ArrayList<>();
-        if (!hasDisciplina(disciplina))
+        if (!hasDisciplina(disciplina)) {
             return disciplinas.add(disciplina);
+        }
         return false;
     }
 
     public Boolean removeDisciplina(Disciplina disciplina) {
-        if (Objects.isNull(disciplinas))
-            disciplinas = new ArrayList<>();
-        return disciplinas.remove(disciplina);
+        Integer tamanhoDisciplinas = this.disciplinas.size();
+        this.disciplinas = this.disciplinas.stream().filter(disc -> !disc.getId().equals(disciplina.getId())).collect(Collectors.toList());
+        return tamanhoDisciplinas > this.disciplinas.size();
     }
 
-    public Boolean hasDisciplina(Disciplina disciplina) {
+    public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
-            .filter(disciplinaFiltro -> disciplinaFiltro.getId().equals(disciplina.getId()) 
-            || disciplinaFiltro.getNome().equals(disciplina.getNome()))
-            .findFirst()
-            .isPresent();
+        .anyMatch((disciplinaFiltro) -> { return
+            disciplinaFiltro.getCodigo().equals(disciplina.getCodigo()) &&
+            disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo());});
     }
 
-    public Boolean isStatusAtiva() {
+    public Optional<Disciplina> findDisciplinaByCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {
+        return getDisciplinas().stream()
+            .filter(disciplina -> disciplina.getCodigo().equals(codigo) && disciplina.getPeriodoLetivo().equals(periodoLetivo))
+            .findFirst();
+    }
+
+    public Optional<Aluno> findAlunoByMatricula(String matricula) {
+        return getDisciplinas().stream()
+            .flatMap(disciplina -> disciplina.getAlunos().stream())
+            .filter(aluno -> aluno.getMatricula().equals(matricula))
+            .findAny();
+    }
+
+    public boolean isStatusAtiva() {
         return status.isAtiva();
     }
 
-    public Boolean isStatusCancelada() {
+    public boolean isStatusCancelada() {
         return status.isCancelada();
     }
 
+    public boolean isEnviando() {
+        return status.isEnviando();
+    }
+
+    public boolean isAguardandoProcessamento() {
+        return status.isAguardandoProcessamento();
+    }
+
     public enum Status {
-        ATIVA, CANCELADA;
+        ATIVA, CANCELADA, ENVIANDO, AGUARDANDO_PROCESSAMENTO, SALVANDO;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -99,6 +135,18 @@ public class Extracao {
 
         public Boolean isCancelada() {
             return CANCELADA.equals(this);
+        }
+
+        public Boolean isEnviando() {
+            return ENVIANDO.equals(this);
+        }
+
+        public Boolean isAguardandoProcessamento() {
+            return AGUARDANDO_PROCESSAMENTO.equals(this);
+        }
+
+        public Boolean isSalvando() {
+            return SALVANDO.equals(this);
         }
     }
 }
