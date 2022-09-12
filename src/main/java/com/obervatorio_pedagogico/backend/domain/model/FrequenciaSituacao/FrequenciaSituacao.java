@@ -38,7 +38,7 @@ public class FrequenciaSituacao implements Serializable {
     private Integer frequencia;
 
     @Column(name = "situacao_disciplina")
-    private String situacaoDisciplina;
+    private SituacaoDisciplina situacaoDisciplina;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_aluno")
@@ -47,4 +47,8 @@ public class FrequenciaSituacao implements Serializable {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_disciplina")
     private Disciplina disciplina;
+
+    public enum SituacaoDisciplina {
+        APROVADO, REPROVADO, TRANCADO, REPROVADO_POR_FALTA, CANCELADO
+    }
 }

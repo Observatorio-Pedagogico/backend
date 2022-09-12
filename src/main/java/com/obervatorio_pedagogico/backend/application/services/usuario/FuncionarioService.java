@@ -4,22 +4,22 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Funcionario;
 
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class UsuarioService {
+public class FuncionarioService {
 
     private FuncionarioCopedService funcionarioCopedService;
 
     private ProfessorService professorService;
 
-    public Optional<Usuario> buscarUsuarioByEmail(String email) {
-        Optional<FuncionarioCoped> funcionarioCopedOp = funcionarioCopedService.buscarPorEmail(email);
+    public Optional<Funcionario> buscarFuncionarioByEmail(String email) {
+        Optional<Coped> funcionarioCopedOp = funcionarioCopedService.buscarPorEmail(email);
         Optional<Professor> professorOp;
 
         if (funcionarioCopedOp.isPresent()) {
@@ -35,7 +35,7 @@ public class UsuarioService {
         return Optional.empty();
     }
 
-    public boolean existeUsuarioCadastrado() {
+    public boolean existeFuncionarioCadastrado() {
         return funcionarioCopedService.count() > 0 || professorService.count() > 0;
     }
 }

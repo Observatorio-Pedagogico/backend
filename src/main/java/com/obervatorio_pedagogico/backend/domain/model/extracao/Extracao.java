@@ -110,6 +110,12 @@ public class Extracao implements Serializable {
             .findAny();
     }
 
+    public void iniciar() {
+        this.setStatus(Status.ENVIANDO);
+        this.setDataCadastro(LocalDateTime.now());
+        this.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+    }
+
     public boolean isStatusAtiva() {
         return status.isAtiva();
     }

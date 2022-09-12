@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
+package com.obervatorio_pedagogico.backend.presentation.model.queue;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;

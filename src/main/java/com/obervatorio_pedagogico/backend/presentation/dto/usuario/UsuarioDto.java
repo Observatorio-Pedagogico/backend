@@ -20,10 +20,4 @@ public class UsuarioDto {
     private String nome;
 
     private Sexo sexo;
-
-    private Tipo tipo;
-
-    public enum Tipo {
-        COPED, PROFESSOR
-    }
 }

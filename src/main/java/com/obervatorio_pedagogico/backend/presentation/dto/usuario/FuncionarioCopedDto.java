@@ -1,6 +1,6 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.usuario;
 
-import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped.TipoCargo;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped.TipoCargo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

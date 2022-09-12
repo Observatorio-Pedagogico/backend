@@ -1,10 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.controllers.autenticacao;
 
-import java.util.List;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -12,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.obervatorio_pedagogico.backend.application.services.autenticacao.AutenticacaoService;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
@@ -57,7 +54,7 @@ public class AutenticationController {
 
     @PostMapping("/espera-cadastro/coped/ativar/{id}")
     public ResponseEntity<Response<FuncionarioCopedDto>> ativarFuncionarioCoped(@PathVariable Long id) {
-        FuncionarioCoped funcionarioCoped = autenticacaoService.ativarFuncionarioCoped(id);
+        Coped funcionarioCoped = autenticacaoService.ativarFuncionarioCoped(id);
 
         FuncionarioCopedDto dto = modelMapperService.convert(funcionarioCoped, FuncionarioCopedDto.class);
         

@@ -9,9 +9,11 @@ import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 
 public final class Uploader {
     private static Uploader instace;
-    private List<ExtracaoThread> threads = new ArrayList<>();
+    private List<ExtracaoThread> threads;
 
-    private Uploader() {}
+    private Uploader() {
+        this.threads = new ArrayList<>();
+    }
 
     public static Uploader getInstance() {
         if (Objects.isNull(instace)) {

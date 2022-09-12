@@ -13,13 +13,14 @@ import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioCopedService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.ProfessorService;
-import com.obervatorio_pedagogico.backend.application.services.usuario.UsuarioService;
+import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioService;
 import com.obervatorio_pedagogico.backend.application.services.utils.EmailService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.LoginInvalidoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioEmailDominioInvalido;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioJaExistenteException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoPermitidoException;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Funcionario;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
 import com.obervatorio_pedagogico.backend.infrastructure.security.auth.JwtUtils;
@@ -45,7 +46,7 @@ public class AutenticacaoService {
 
     private ProfessorService professorService;
 
-    private UsuarioService usuarioService;
+    private FuncionarioService funcionarioService;
 
     private AuthenticationManager authenticationManager;
 
@@ -75,7 +76,7 @@ public class AutenticacaoService {
             throw new LoginInvalidoException();
         }
 
-        Optional<Usuario> usuarioOp = usuarioService.buscarUsuarioByEmail(authRequest.getEmail());
+        Optional<Funcionario> usuarioOp = funcionarioService.buscarFuncionarioByEmail(authRequest.getEmail());
 
         if (usuarioOp.isPresent() && !usuarioOp.get().isAtivo()) {
             throw new UsuarioNaoPermitidoException();
@@ -91,7 +92,7 @@ public class AutenticacaoService {
     public Usuario cadastrar(CadastroUsuarioDto cadastroUsuarioDto) {
         this.validarCadastro(cadastroUsuarioDto);
 
-        boolean isPrimeiro = !usuarioService.existeUsuarioCadastrado();
+        boolean isPrimeiro = !funcionarioService.existeFuncionarioCadastrado();
 
         String senha = null;
         try {
@@ -101,7 +102,7 @@ public class AutenticacaoService {
         }
 
         if (cadastroUsuarioDto.getTipo().equals(Tipo.COPED)) {
-            FuncionarioCoped funcionarioCoped = modelMapperService.convert(cadastroUsuarioDto, FuncionarioCoped.class);
+            Coped funcionarioCoped = modelMapperService.convert(cadastroUsuarioDto, Coped.class);
             funcionarioCoped.setSenha(senha);
 
             if (isPrimeiro) {
@@ -123,7 +124,7 @@ public class AutenticacaoService {
         }
     }
 
-    public FuncionarioCoped ativarFuncionarioCoped(Long id) {
+    public Coped ativarFuncionarioCoped(Long id) {
         return funcionarioCopedService.ativarFuncionarioCoped(id);
     }
 
@@ -131,7 +132,7 @@ public class AutenticacaoService {
         return professorService.ativarProfessor(id);
     }
 
-    public List<FuncionarioCoped> listarEsperaCadastroCoped() {
+    public List<Coped> listarEsperaCadastroCoped() {
         return funcionarioCopedService.listarEsperaCadastro();
     }
 

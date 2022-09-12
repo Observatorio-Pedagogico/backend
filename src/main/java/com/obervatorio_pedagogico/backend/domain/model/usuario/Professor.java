@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Entity
 @Table(name = "t_professor")
-public class Professor extends Usuario {
+public class Professor extends Funcionario {
     
 }
