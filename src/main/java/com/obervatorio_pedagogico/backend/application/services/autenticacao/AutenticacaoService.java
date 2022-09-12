@@ -19,7 +19,7 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.LoginInvalidoExcepti
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioEmailDominioInvalido;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioJaExistenteException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoPermitidoException;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Funcionario;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
@@ -102,7 +102,7 @@ public class AutenticacaoService {
         }
 
         if (cadastroUsuarioDto.getTipo().equals(Tipo.COPED)) {
-            Coped funcionarioCoped = modelMapperService.convert(cadastroUsuarioDto, Coped.class);
+            FuncionarioCoped funcionarioCoped = modelMapperService.convert(cadastroUsuarioDto, FuncionarioCoped.class);
             funcionarioCoped.setSenha(senha);
 
             if (isPrimeiro) {
@@ -124,7 +124,7 @@ public class AutenticacaoService {
         }
     }
 
-    public Coped ativarFuncionarioCoped(Long id) {
+    public FuncionarioCoped ativarFuncionarioCoped(Long id) {
         return funcionarioCopedService.ativarFuncionarioCoped(id);
     }
 
@@ -132,7 +132,7 @@ public class AutenticacaoService {
         return professorService.ativarProfessor(id);
     }
 
-    public List<Coped> listarEsperaCadastroCoped() {
+    public List<FuncionarioCoped> listarEsperaCadastroCoped() {
         return funcionarioCopedService.listarEsperaCadastro();
     }
 

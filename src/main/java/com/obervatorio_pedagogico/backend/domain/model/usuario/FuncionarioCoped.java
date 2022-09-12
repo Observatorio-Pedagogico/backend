@@ -17,7 +17,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @Entity
 @Table(name = "t_funcionario_coped")
-public class Coped extends Funcionario {
+public class FuncionarioCoped extends Funcionario {
     
     @Column(name = "cargo")
     @Enumerated(EnumType.STRING)

@@ -4,7 +4,7 @@ import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Funcionario;
 
@@ -19,7 +19,7 @@ public class FuncionarioService {
     private ProfessorService professorService;
 
     public Optional<Funcionario> buscarFuncionarioByEmail(String email) {
-        Optional<Coped> funcionarioCopedOp = funcionarioCopedService.buscarPorEmail(email);
+        Optional<FuncionarioCoped> funcionarioCopedOp = funcionarioCopedService.buscarPorEmail(email);
         Optional<Professor> professorOp;
 
         if (funcionarioCopedOp.isPresent()) {

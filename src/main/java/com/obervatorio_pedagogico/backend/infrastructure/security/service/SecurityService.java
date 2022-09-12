@@ -15,7 +15,7 @@ import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioCopedService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.ProfessorService;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Coped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 
 import lombok.AllArgsConstructor;
@@ -29,7 +29,7 @@ public class SecurityService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        Optional<Coped> funcionarioCopedRecuperadoOp;
+        Optional<FuncionarioCoped> funcionarioCopedRecuperadoOp;
         Optional<Professor> professorRecuperadoOp;
 
         List<SimpleGrantedAuthority> roles = new ArrayList<>();
