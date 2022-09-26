@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.model.arquivo;
+package com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquivos;
 
 import org.apache.poi.ss.usermodel.Row;
 
@@ -11,7 +11,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class LinhaArquivo {
+public class LinhaArquivoDisciplina {
     private String matricula;
     private String nomeAluno;
     private String codigoDisciplina;
@@ -28,7 +28,7 @@ public class LinhaArquivo {
     private Integer quantidadeMatriculas;
     private Integer quantidadeReprovados;
 
-    public LinhaArquivo(Row row) {
+    public LinhaArquivoDisciplina(Row row) {
         this.matricula = row.getCell(1).getStringCellValue();
         this.nomeAluno = row.getCell(2).getStringCellValue();
         this.codigoDisciplina = row.getCell(4).getStringCellValue();
@@ -46,7 +46,7 @@ public class LinhaArquivo {
         this.quantidadeReprovados = NumberConverters.stringToInteger(row.getCell(18).getStringCellValue());
     }
 
-    public LinhaArquivo() {}
+    public LinhaArquivoDisciplina() {}
 
     public Sexo converterSexo(String sexoInput) {
         switch(sexoInput) {

@@ -113,8 +113,7 @@ public class Disciplina implements Serializable {
 
     public boolean hasAlunos(Aluno aluno) {
         return alunos.stream()
-            .anyMatch(alunoFiltro ->(alunoFiltro.getNome().equals(aluno.getNome())
-            && alunoFiltro.getMatricula().equals(aluno.getMatricula())));
+            .anyMatch(alunoFiltro -> alunoFiltro.getMatricula().equals(aluno.getMatricula()));
     }
 
     public boolean hasAlunosById(Aluno aluno) {

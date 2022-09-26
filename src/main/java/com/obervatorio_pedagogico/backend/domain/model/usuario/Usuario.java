@@ -33,8 +33,7 @@ public abstract class Usuario {
     @Column(name = "email")
     protected String email;
 
-    @Column(name = "senha")
-    protected String senha;
+    
 
     @Column(name = "nome")
     protected String nome;

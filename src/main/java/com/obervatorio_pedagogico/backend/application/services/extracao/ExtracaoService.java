@@ -12,6 +12,7 @@ import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
@@ -30,7 +31,10 @@ import com.obervatorio_pedagogico.backend.infrastructure.rabbitmq.MQConfig;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.Arquivo;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
-import com.obervatorio_pedagogico.backend.presentation.model.arquivo.LinhaArquivo;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.ArquivoAluno;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.ArquivoDisciplina;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquivos.LinhaArquivoAluno;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquivos.LinhaArquivoDisciplina;
 import com.obervatorio_pedagogico.backend.presentation.model.queue.ArquivoQueue;
 import com.obervatorio_pedagogico.backend.presentation.model.queue.ExtracaoRequestQueue;
 
@@ -55,16 +59,33 @@ public class ExtracaoService {
         extracao.setStatus(Status.AGUARDANDO_PROCESSAMENTO);
 
         ExtracaoRequestQueue extracaoRequestAux = modelMapperService.convert(extracao, ExtracaoRequestQueue.class);
-        ArquivoQueue arquivoQueue;
+        ArquivoQueue arquivoDisciplinaQueue;
+        ArquivoQueue arquivoAlunoQueue;
+        
         try {
-            arquivoQueue = new ArquivoQueue(
-                extracaoRequest.getArquivo().getConteudo().getBytes(),
-                extracaoRequest.getArquivo().getConteudo().getContentType()
+            arquivoDisciplinaQueue = new ArquivoQueue(
+                extracaoRequest.getArquivoDisciplina().getConteudo().getBytes(),
+                extracaoRequest.getArquivoDisciplina().getConteudo().getContentType()
             );
+        } catch (NullPointerException nullPointerException) {
+            arquivoDisciplinaQueue = null;
         } catch (IOException e) {
             throw new FalhaArquivoException();
         }
-        extracaoRequestAux.setArquivo(arquivoQueue);
+
+        try {
+            arquivoAlunoQueue = new ArquivoQueue(
+                extracaoRequest.getArquivoAluno().getConteudo().getBytes(),
+                extracaoRequest.getArquivoAluno().getConteudo().getContentType()
+            );
+        } catch (NullPointerException nullPointerException) {
+            arquivoAlunoQueue = null;
+        } catch (IOException e) {
+            throw new FalhaArquivoException();
+        }
+
+        extracaoRequestAux.setArquivoDisciplina(arquivoDisciplinaQueue);
+        extracaoRequestAux.setArquivoAluno(arquivoAlunoQueue);
         rabbitTemplate.convertAndSend(MQConfig.EXTRACAO_EXCHANGE, MQConfig.ROUTING_KEY_ENTRADA, extracaoRequestAux);
     }
 
@@ -72,15 +93,25 @@ public class ExtracaoService {
     public void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
         Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
         ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
-        CustomMultipartFile customMultipartFile = new CustomMultipartFile(extracaoRequestQueue.getArquivo().getConteudoArquivo());
 
-        extracaoRequest.getArquivo().setConteudo(customMultipartFile);
-        processar(extracao, extracaoRequest.getArquivo());
+        try {
+            CustomMultipartFile customMultipartFileArquivoDisciplina = new CustomMultipartFile(extracaoRequestQueue.getArquivoDisciplina().getConteudoArquivo());
+            extracaoRequest.getArquivoDisciplina().setConteudo(customMultipartFileArquivoDisciplina);
+
+        } catch (NullPointerException nullPointerException) {}
+        
+        try {
+            CustomMultipartFile customMultipartFileArquivoAluno = new CustomMultipartFile(extracaoRequestQueue.getArquivoAluno().getConteudoArquivo());
+            extracaoRequest.getArquivoAluno().setConteudo(customMultipartFileArquivoAluno);
+
+        } catch (NullPointerException nullPointerException) {}
+
+        processar(extracao, extracaoRequest.getArquivoDisciplina(), extracaoRequest.getArquivoAluno());
     }
 
-    public void processar(Extracao extracao, Arquivo arquivo) {
-        validarArquivo(arquivo);
-        lerArquivo(extracao, arquivo);
+    public void processar(Extracao extracao, Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
+        validar(arquivoDisciplina, arquivoAluno);
+        lerArquivo(extracao, arquivoDisciplina, arquivoAluno);
     }
 
     public List<Extracao> getTodos() {
@@ -132,59 +163,90 @@ public class ExtracaoService {
         
         extracaoRepository.deleteById(extracao.getId());
     }
+
+    private void validar(Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
+        if (Objects.isNull(arquivoDisciplina) && Objects.isNull(arquivoAluno)) {
+            //TODO exception aqui
+        }
+
+        if (Objects.nonNull(arquivoDisciplina))
+            validarArquivoDisciplina(arquivoDisciplina);
+        if (Objects.nonNull(arquivoAluno))
+            validarArquivoAluno(arquivoAluno);
+    }
     
     private void validarFormatoArquivo(Arquivo arquivo) {
         if (!arquivo.isSuportado())
             throw new FormatoArquivoNaoSuportadoException(arquivo.getConteudo().getContentType());
     }
     
-    private void validarArquivo(Arquivo arquivo) {
+    private void validarArquivoDisciplina(Arquivo arquivo) {
         validarFormatoArquivo(arquivo);
     }
 
-    private void lerArquivo(Extracao extracao, Arquivo arquivo) {
-        try {
-            Workbook workbook = WorkbookFactory.create(arquivo.getConteudo().getInputStream());
-            Sheet sheet = workbook.getSheetAt(0);
+    private void validarArquivoAluno(Arquivo arquivo) {
+        validarFormatoArquivo(arquivo);
+    }
 
-            iniciarThread(extracao, sheet);
-            workbook.close();
+    private void lerArquivo(Extracao extracao, Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
+        try {
+            Workbook workbookDisciplina = null;
+            Workbook workbookAluno = null;
+            Sheet sheetDisciplina = null;
+            Sheet sheetAluno = null;
+
+            if (Objects.nonNull(arquivoDisciplina)) {
+                workbookDisciplina = WorkbookFactory.create(arquivoDisciplina.getConteudo().getInputStream());
+                sheetDisciplina = workbookDisciplina.getSheetAt(0);
+            }
+            if (Objects.nonNull(arquivoAluno)) {
+                workbookAluno = WorkbookFactory.create(arquivoAluno.getConteudo().getInputStream());
+                sheetAluno = workbookAluno.getSheetAt(0);
+            }
+            
+            iniciarThread(extracao, sheetDisciplina, sheetAluno);
+
+            if (Objects.nonNull(workbookDisciplina))
+                workbookDisciplina.close();
+            if (Objects.nonNull(workbookAluno))
+                workbookAluno.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
-    private void iniciarThread(Extracao extracao, Sheet sheet) {
+    @Transactional
+    private void iniciarThread(Extracao extracao, Sheet sheetDisciplina, Sheet sheetAluno) {
         ExtracaoThread thread = new ExtracaoThread();
         thread.setExtracao(extracao);
         Uploader.getInstance().addThread(thread);
 
-        cadastrarExtracao(extracao, sheet, thread);
+        thread.setTotalLinhas(obterTotalLinhas(sheetDisciplina) + obterTotalLinhas(sheetAluno));
+        iniciarOperacao(extracao);
+        cadastrarExtracaoDisciplina(extracao, sheetDisciplina, thread);
+        cadastrarExtracaoAluno(extracao, sheetAluno, thread);
+        salvarOperacao(extracao);
     }
 
-    private void cadastrarExtracao(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
+    private void cadastrarExtracaoDisciplina(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
+        if (Objects.isNull(sheet)) return;
+
         Aluno aluno = null;
-        extracaoThread.setTotalLinhas(sheet.getLastRowNum());
+        ArquivoDisciplina arquivoDisciplina = new ArquivoDisciplina(sheet);
+        Integer threadQuantidadeLinhas = extracaoThread.getLinhaAtual();
 
-        extracao.iniciar();
-        extracaoRepository.save(extracao);
-        for (int i = 1; i < sheet.getLastRowNum(); i++) {
-            LinhaArquivo linhaArquivo = new LinhaArquivo(sheet.getRow(i));
-            if (Objects.isNull(linhaArquivo.getMatricula())) continue;
-
+        for (int i = 0; i < arquivoDisciplina.getLinhas().size(); i++) {
+            LinhaArquivoDisciplina linhaArquivo = arquivoDisciplina.getLinhas().get(i);
             Disciplina disciplina = findDisciplina(linhaArquivo, extracao);
 
-            if (
-                (i < sheet.getLastRowNum()-1 && Objects.nonNull(linhaArquivo.getMatricula())) &&
-                (Objects.isNull(aluno) || !aluno.getMatricula().equals(sheet.getRow(i+1).getCell(1).getStringCellValue()))
-            ){
+            if (Objects.isNull(aluno) || arquivoDisciplina.proximoEMesmoAluno(i)) {
                 if (Objects.nonNull(aluno)) {
                     disciplina.addAluno(aluno);
                     aluno.addDisciplina(disciplina);
                     disciplina.addExtracao(extracao);
                     extracao.addDisciplina(disciplina);
                     aluno = null;
-                    extracaoThread.setLinhaAtual(i);
+                    extracaoThread.setLinhaAtual(threadQuantidadeLinhas + i);
                     continue;
                 }
                 aluno = findAluno(linhaArquivo, extracao);
@@ -197,18 +259,42 @@ public class ExtracaoService {
             disciplina.addExtracao(extracao);
             extracao.addDisciplina(disciplina);
         }
-        extracao.setStatus(Status.SALVANDO);
-        extracaoRepository.save(extracao);
-        
-        Uploader.getInstance().removeThread(extracao.getId());
-
-        extracao = extracaoRepository.findById(extracao.getId()).get();
-        extracao.setStatus(Status.ATIVA);
-        extracaoRepository.save(extracao);
-        System.out.println(Status.ATIVA);
     }
 
-    private Disciplina findDisciplina(LinhaArquivo linhaArquivo, Extracao extracao) {
+    private void cadastrarExtracaoAluno(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
+        if (Objects.isNull(sheet)) return;
+
+        Aluno aluno = null;
+        ArquivoAluno arquivoAluno = new ArquivoAluno(sheet);
+        Integer threadQuantidadeLinhas = extracaoThread.getLinhaAtual();
+
+        for (int i = 0; i < arquivoAluno.getLinhas().size(); i++) {
+            LinhaArquivoAluno linhaArquivo = arquivoAluno.getLinhas().get(i);
+            Disciplina disciplina = findDisciplina(linhaArquivo, extracao);
+
+            if (Objects.isNull(aluno) || arquivoAluno.proximoEMesmoAluno(i)) {
+                if (Objects.nonNull(aluno)) {
+                    disciplina.addAluno(aluno);
+                    aluno.addDisciplina(disciplina);
+                    disciplina.addExtracao(extracao);
+                    extracao.addDisciplina(disciplina);
+                    aluno = null;
+                    extracaoThread.setLinhaAtual(threadQuantidadeLinhas + i);
+                    continue;
+                }
+                aluno = findAluno(linhaArquivo, extracao);
+                System.out.println(aluno.getNome());
+            }
+            if (Objects.nonNull(aluno)) {
+                disciplina.addAluno(aluno);
+                aluno.addDisciplina(disciplina);
+            }
+            disciplina.addExtracao(extracao);
+            extracao.addDisciplina(disciplina);
+        }
+    }
+
+    private Disciplina findDisciplina(LinhaArquivoDisciplina linhaArquivo, Extracao extracao) {
         String periodoLetivo = definirPeriodoLetivo(linhaArquivo.getAnoLetivo().toString(), linhaArquivo.getPeriodoLetivo().toString());
         Optional<Disciplina> disciplinaOp = extracao.findDisciplinaByCodigoEPeriodoLetivo(linhaArquivo.getCodigoDisciplina(), periodoLetivo);
         if (disciplinaOp.isPresent()) return disciplinaOp.get();
@@ -223,7 +309,41 @@ public class ExtracaoService {
         return disciplina;
     }
 
-    private Aluno findAluno(LinhaArquivo linhaArquivo, Extracao extracao) {
+    private Disciplina findDisciplina(LinhaArquivoAluno linhaArquivo, Extracao extracao) {
+        String periodoLetivo = linhaArquivo.getPeriodo();
+        Optional<Disciplina> disciplinaOp = extracao.findDisciplinaByCodigoEPeriodoLetivo(linhaArquivo.getCodigoDisciplina(), periodoLetivo);
+        if (disciplinaOp.isPresent()) return disciplinaOp.get();
+
+        disciplinaOp = disciplinaService.buscarPorCodigoEPeriodoLetivo(linhaArquivo.getCodigoDisciplina(), periodoLetivo);
+        if (disciplinaOp.isPresent()) return disciplinaOp.get();
+
+        Disciplina disciplina = new Disciplina();
+        disciplina.setCodigo(linhaArquivo.getCodigoDisciplina());
+        disciplina.setNome(linhaArquivo.getNomeDisciplina());
+        disciplina.setPeriodoLetivo(periodoLetivo);
+        return disciplina;
+    }
+
+    private Aluno findAluno(LinhaArquivoDisciplina linhaArquivo, Extracao extracao) {
+        String matricula = linhaArquivo.getMatricula();
+
+        Optional<Aluno> alunoOp = extracao.findAlunoByMatricula(matricula);
+        if (alunoOp.isPresent()) return alunoOp.get();
+
+        alunoOp = alunoService.buscarPorMatricula(matricula);
+        if (alunoOp.isPresent()) {
+            Aluno aluno = alunoOp.get();
+            aluno.setNome(linhaArquivo.getNomeAluno());
+            return aluno;
+        }
+
+        Aluno aluno = new Aluno();
+        aluno.setMatricula(matricula);
+        aluno.setNome(linhaArquivo.getNomeAluno());
+        return aluno;
+    }
+
+    private Aluno findAluno(LinhaArquivoAluno linhaArquivo, Extracao extracao) {
         String matricula = linhaArquivo.getMatricula();
 
         Optional<Aluno> alunoOp = extracao.findAlunoByMatricula(matricula);
@@ -234,11 +354,34 @@ public class ExtracaoService {
 
         Aluno aluno = new Aluno();
         aluno.setMatricula(matricula);
-        aluno.setNome(linhaArquivo.getNomeAluno());
         return aluno;
     }
 
     private String definirPeriodoLetivo(String anoLetivo, String serieLetivo) {
         return anoLetivo.concat(".").concat(serieLetivo);
+    }
+
+    private void iniciarOperacao(Extracao extracao) {
+        extracao.iniciar();
+        extracaoRepository.save(extracao);
+    }
+
+    private void salvarOperacao(Extracao extracao) {
+        extracao.setStatus(Status.SALVANDO);
+        extracaoRepository.save(extracao);
+        
+        Uploader.getInstance().removeThread(extracao.getId());
+
+        extracao = extracaoRepository.findById(extracao.getId()).get();
+        extracao.setStatus(Status.ATIVA);
+        extracaoRepository.save(extracao);
+        System.out.println(Status.ATIVA);
+    }
+
+    private Integer obterTotalLinhas(Sheet sheet) {
+        if (Objects.isNull(sheet)) {
+            return 0;
+        }
+        return sheet.getLastRowNum();
     }
 }

@@ -14,6 +14,10 @@ import lombok.Setter;
 @AllArgsConstructor
 @MappedSuperclass
 public abstract class Funcionario extends Usuario {
+
+    @Column(name = "senha")
+    protected String senha;
+    
     @Column(name = "ativo")
     protected Boolean ativo = false;
 

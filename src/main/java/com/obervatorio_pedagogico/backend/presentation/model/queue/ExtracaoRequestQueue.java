@@ -28,5 +28,7 @@ public class ExtracaoRequestQueue implements Serializable {
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private ArquivoQueue arquivo;
+    private ArquivoQueue arquivoDisciplina;
+    
+    private ArquivoQueue arquivoAluno;
 }

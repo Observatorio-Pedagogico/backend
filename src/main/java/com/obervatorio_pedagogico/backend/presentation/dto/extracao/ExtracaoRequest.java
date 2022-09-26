@@ -28,5 +28,7 @@ public class ExtracaoRequest implements Serializable {
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private Arquivo arquivo;
+    private Arquivo arquivoDisciplina;
+    
+    private Arquivo arquivoAluno;
 }
