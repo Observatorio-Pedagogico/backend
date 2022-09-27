@@ -71,10 +71,30 @@ public class Aluno extends Usuario implements Serializable {
         return tamanhoDisciplinas > this.disciplinas.size();
     }
 
+    public boolean addFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        if (!hasFrequenciaSituacoes(frequenciaSituacao)) {
+            return frequenciaSituacoes.add(frequenciaSituacao);
+        }
+        return false;
+    }
+
+    public boolean removeFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        Integer tamanhoFrequenciaSituacoes = this.frequenciaSituacoes.size();
+        this.frequenciaSituacoes = this.frequenciaSituacoes.stream().filter(freq -> !freq.getId().equals(frequenciaSituacao.getId())).collect(Collectors.toList());
+        return tamanhoFrequenciaSituacoes > this.frequenciaSituacoes.size();
+    }
+
     public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
             .anyMatch(disciplinaFiltro -> disciplinaFiltro.getCodigo().equals(disciplina.getCodigo())
             && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
+    }
+
+    public boolean hasFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        return frequenciaSituacoes.stream()
+            .anyMatch(frequenciaSituacoesFiltro -> frequenciaSituacoesFiltro.getFrequencia().equals(frequenciaSituacao.getFrequencia()) &&
+            frequenciaSituacoesFiltro.getDisciplina().equals(frequenciaSituacao.getDisciplina()) &&
+            frequenciaSituacoesFiltro.getAluno().equals(frequenciaSituacao.getAluno()));
     } 
     
     public boolean isPassivoDeletar() {

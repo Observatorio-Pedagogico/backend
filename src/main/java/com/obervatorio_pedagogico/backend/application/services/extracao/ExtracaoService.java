@@ -1,7 +1,9 @@
 package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -20,8 +22,11 @@ import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoServ
 import com.obervatorio_pedagogico.backend.domain.exceptions.FalhaArquivoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.customMultipartFile.CustomMultipartFile;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
+import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
+import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota.Tipo;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
@@ -278,6 +283,7 @@ public class ExtracaoService {
                     aluno.addDisciplina(disciplina);
                     disciplina.addExtracao(extracao);
                     extracao.addDisciplina(disciplina);
+                    aluno.addFrequenciaSituacoes(gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo.getFrequencia(), linhaArquivo.getNotas()));
                     aluno = null;
                     extracaoThread.setLinhaAtual(threadQuantidadeLinhas + i);
                     continue;
@@ -288,6 +294,7 @@ public class ExtracaoService {
             if (Objects.nonNull(aluno)) {
                 disciplina.addAluno(aluno);
                 aluno.addDisciplina(disciplina);
+                aluno.addFrequenciaSituacoes(gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo.getFrequencia(), linhaArquivo.getNotas()));
             }
             disciplina.addExtracao(extracao);
             extracao.addDisciplina(disciplina);
@@ -355,6 +362,56 @@ public class ExtracaoService {
         Aluno aluno = new Aluno();
         aluno.setMatricula(matricula);
         return aluno;
+    }
+
+    private FrequenciaSituacao gerarFrequenciaSituacao(Aluno aluno, Disciplina disciplina, Integer frequencia, String jsonNotas) {
+        FrequenciaSituacao frequenciaSituacao = new FrequenciaSituacao();
+        frequenciaSituacao.setAluno(aluno);
+        frequenciaSituacao.setDisciplina(disciplina);
+        // frequenciaSituacao.setSituacaoDisciplina(situacaoDisciplina);
+        frequenciaSituacao.setFrequencia(frequencia);
+
+        List<Nota> notas = gerarNotas(jsonNotas);
+        for (Nota nota : notas) {
+            nota.setAluno(aluno);
+            nota.setDisciplina(disciplina);
+        }
+        frequenciaSituacao.setNotas(notas);
+
+        return frequenciaSituacao;
+    }
+
+    private List<Nota> gerarNotas(String jsonNotas) {
+        List<Nota> notas = new ArrayList<>();
+        Nota nota = null;
+
+        List<String> jsonSplitNotas = Arrays.asList(jsonNotas.split(","));
+
+        for (String jsonSplitNota : jsonSplitNotas) {
+            List<String> notaIndividual = Arrays.asList(jsonSplitNota.split(":"));
+
+            nota = new Nota();
+            switch (notaIndividual.get(0).charAt(0)) {
+                case 'A':
+                    nota.setTipo(Tipo.NOTA);
+                    break;
+                case 'M':
+                    nota.setTipo(Tipo.MEDIA);
+                    break;
+                case 'F':
+                    nota.setTipo(Tipo.FINAL);
+                    break;
+            }
+
+            String ordem = notaIndividual.get(0).substring(1);
+            if (!ordem.isEmpty())
+                nota.setOrdem(new Integer(ordem));
+            nota.setValor(new BigDecimal(notaIndividual.get(1)));
+
+            notas.add(nota);
+        }
+        
+        return notas;
     }
 
     private String definirPeriodoLetivo(String anoLetivo, String serieLetivo) {

@@ -55,7 +55,17 @@ public class Nota implements Serializable {
     private Disciplina disciplina;
 
     public enum Tipo {
-        NOTA, MEDIA, FINAL;
+        NOTA("A"), MEDIA("M"), FINAL("F");
+
+        public final String label;
+
+        private Tipo(String label) {
+            this.label = label;
+        }
+
+        public String getLabel() {
+            return this.label;
+        }
 
         public Boolean isNota() {
             return NOTA.equals(this);
