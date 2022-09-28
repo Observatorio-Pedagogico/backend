@@ -73,13 +73,6 @@ public class Disciplina implements Serializable {
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
-    private List<Nota> notas = new ArrayList<>();
-
-    @OneToMany(
-        mappedBy = "disciplina", 
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
     private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
@@ -103,6 +96,16 @@ public class Disciplina implements Serializable {
         if (!hasAlunos(aluno))
             return alunos.add(aluno);
         return false;
+    }
+
+    public boolean addFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        return frequenciaSituacoes.add(frequenciaSituacao);
+    }
+
+    public boolean removeFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        Integer tamanhoFrequenciaSituacoes = this.frequenciaSituacoes.size();
+        this.frequenciaSituacoes = this.frequenciaSituacoes.stream().filter(freq -> !freq.getId().equals(frequenciaSituacao.getId())).collect(Collectors.toList());
+        return tamanhoFrequenciaSituacoes > this.frequenciaSituacoes.size();
     }
 
     public boolean removeAluno(Aluno aluno) {

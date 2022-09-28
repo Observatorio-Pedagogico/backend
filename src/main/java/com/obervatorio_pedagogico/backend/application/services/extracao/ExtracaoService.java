@@ -23,6 +23,7 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.FalhaArquivoExceptio
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.customMultipartFile.CustomMultipartFile;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
@@ -170,7 +171,7 @@ public class ExtracaoService {
     }
 
     private void validar(Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
-        if (Objects.isNull(arquivoDisciplina) && Objects.isNull(arquivoAluno)) {
+        if (Objects.isNull(arquivoDisciplina) || Objects.isNull(arquivoAluno)) {
             //TODO exception aqui
         }
 
@@ -250,6 +251,7 @@ public class ExtracaoService {
                     aluno.addDisciplina(disciplina);
                     disciplina.addExtracao(extracao);
                     extracao.addDisciplina(disciplina);
+                    gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo);
                     aluno = null;
                     extracaoThread.setLinhaAtual(threadQuantidadeLinhas + i);
                     continue;
@@ -260,6 +262,7 @@ public class ExtracaoService {
             if (Objects.nonNull(aluno)) {
                 disciplina.addAluno(aluno);
                 aluno.addDisciplina(disciplina);
+                gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo);
             }
             disciplina.addExtracao(extracao);
             extracao.addDisciplina(disciplina);
@@ -283,7 +286,7 @@ public class ExtracaoService {
                     aluno.addDisciplina(disciplina);
                     disciplina.addExtracao(extracao);
                     extracao.addDisciplina(disciplina);
-                    aluno.addFrequenciaSituacoes(gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo.getFrequencia(), linhaArquivo.getNotas()));
+                    gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo);
                     aluno = null;
                     extracaoThread.setLinhaAtual(threadQuantidadeLinhas + i);
                     continue;
@@ -294,7 +297,7 @@ public class ExtracaoService {
             if (Objects.nonNull(aluno)) {
                 disciplina.addAluno(aluno);
                 aluno.addDisciplina(disciplina);
-                aluno.addFrequenciaSituacoes(gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo.getFrequencia(), linhaArquivo.getNotas()));
+                gerarFrequenciaSituacao(aluno, disciplina, linhaArquivo);
             }
             disciplina.addExtracao(extracao);
             extracao.addDisciplina(disciplina);
@@ -364,21 +367,44 @@ public class ExtracaoService {
         return aluno;
     }
 
-    private FrequenciaSituacao gerarFrequenciaSituacao(Aluno aluno, Disciplina disciplina, Integer frequencia, String jsonNotas) {
-        FrequenciaSituacao frequenciaSituacao = new FrequenciaSituacao();
-        frequenciaSituacao.setAluno(aluno);
-        frequenciaSituacao.setDisciplina(disciplina);
-        // frequenciaSituacao.setSituacaoDisciplina(situacaoDisciplina);
-        frequenciaSituacao.setFrequencia(frequencia);
+    private void gerarFrequenciaSituacao(Aluno aluno, Disciplina disciplina, LinhaArquivoDisciplina linhaArquivoDisciplina) {
+        FrequenciaSituacao frequenciaSituacao = buscarFrequenciaSituacao(aluno, disciplina);
+        if (Objects.isNull(frequenciaSituacao)) {
+            frequenciaSituacao = new FrequenciaSituacao();
+            frequenciaSituacao.setDisciplina(disciplina);
+            frequenciaSituacao.setAluno(aluno);
+            aluno.addFrequenciaSituacoes(frequenciaSituacao);
+            disciplina.addFrequenciaSituacoes(frequenciaSituacao);
+        }
 
-        List<Nota> notas = gerarNotas(jsonNotas);
+        frequenciaSituacao.setSituacaoDisciplina(SituacaoDisciplina.fromString(linhaArquivoDisciplina.getSituacao()));
+    }
+
+    private void gerarFrequenciaSituacao(Aluno aluno, Disciplina disciplina, LinhaArquivoAluno linhaArquivoAluno) {
+        FrequenciaSituacao frequenciaSituacao = buscarFrequenciaSituacao(aluno, disciplina);
+        if (Objects.isNull(frequenciaSituacao)) {
+            frequenciaSituacao = new FrequenciaSituacao();
+            frequenciaSituacao.setDisciplina(disciplina);
+            frequenciaSituacao.setAluno(aluno);
+            aluno.addFrequenciaSituacoes(frequenciaSituacao);
+            disciplina.addFrequenciaSituacoes(frequenciaSituacao);
+        }
+        frequenciaSituacao.setFrequencia(linhaArquivoAluno.getFrequencia());
+
+        List<Nota> notas = gerarNotas(linhaArquivoAluno.getNotas());
         for (Nota nota : notas) {
             nota.setAluno(aluno);
             nota.setDisciplina(disciplina);
         }
         frequenciaSituacao.setNotas(notas);
+    }
 
-        return frequenciaSituacao;
+    public FrequenciaSituacao buscarFrequenciaSituacao(Aluno aluno,  Disciplina disciplina) {
+        return aluno.getFrequenciaSituacoes().stream()
+            .filter(frequenciaSituacao -> frequenciaSituacao.getDisciplina().getCodigo().equals(disciplina.getCodigo()) &&
+                frequenciaSituacao.getDisciplina().getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()))
+            .findFirst()
+            .orElse(null);
     }
 
     private List<Nota> gerarNotas(String jsonNotas) {

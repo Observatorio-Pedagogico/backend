@@ -72,10 +72,7 @@ public class Aluno extends Usuario implements Serializable {
     }
 
     public boolean addFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
-        if (!hasFrequenciaSituacoes(frequenciaSituacao)) {
-            return frequenciaSituacoes.add(frequenciaSituacao);
-        }
-        return false;
+        return frequenciaSituacoes.add(frequenciaSituacao);
     }
 
     public boolean removeFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
@@ -89,13 +86,6 @@ public class Aluno extends Usuario implements Serializable {
             .anyMatch(disciplinaFiltro -> disciplinaFiltro.getCodigo().equals(disciplina.getCodigo())
             && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
     }
-
-    public boolean hasFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
-        return frequenciaSituacoes.stream()
-            .anyMatch(frequenciaSituacoesFiltro -> frequenciaSituacoesFiltro.getFrequencia().equals(frequenciaSituacao.getFrequencia()) &&
-            frequenciaSituacoesFiltro.getDisciplina().equals(frequenciaSituacao.getDisciplina()) &&
-            frequenciaSituacoesFiltro.getAluno().equals(frequenciaSituacao.getAluno()));
-    } 
     
     public boolean isPassivoDeletar() {
         return this.disciplinas.isEmpty();

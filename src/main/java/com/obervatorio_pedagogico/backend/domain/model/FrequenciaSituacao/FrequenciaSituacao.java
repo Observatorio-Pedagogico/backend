@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -52,6 +54,7 @@ public class FrequenciaSituacao implements Serializable {
     private List<Nota> notas = new ArrayList<>();
 
     @Column(name = "situacao_disciplina")
+    @Enumerated(EnumType.STRING)
     private SituacaoDisciplina situacaoDisciplina;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -87,6 +90,25 @@ public class FrequenciaSituacao implements Serializable {
     }
 
     public enum SituacaoDisciplina {
-        APROVADO, REPROVADO, TRANCADO, REPROVADO_POR_FALTA, CANCELADO
+        APROVADO("aprovado"), REPROVADO("reprovado"), TRANCADO("trancado"), REPROVADO_POR_FALTA("reprovado por falta"), CANCELADO("cancelado");
+
+        private String text;
+
+        SituacaoDisciplina(String text) {
+            this.text = text;
+        }
+
+        public String getText() {
+            return this.text;
+        }
+
+        public static SituacaoDisciplina fromString(String text) {
+            for (SituacaoDisciplina situacaoDisciplina : SituacaoDisciplina.values()) {
+                if (situacaoDisciplina.text.equalsIgnoreCase(text)) {
+                    return situacaoDisciplina;
+                }
+            }
+            return null;
+        }
     }
 }

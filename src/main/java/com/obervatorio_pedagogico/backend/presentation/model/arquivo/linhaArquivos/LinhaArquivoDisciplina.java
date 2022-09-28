@@ -2,7 +2,6 @@ package com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArqui
 
 import org.apache.poi.ss.usermodel.Row;
 
-import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.converters.NumberConverters;
 
@@ -21,7 +20,7 @@ public class LinhaArquivoDisciplina {
     private Integer periodoLetivo;
     private Float media;
     private Integer frequencia;
-    private SituacaoDisciplina situacao;
+    private String situacao;
     private Integer idade;
     private Sexo sexo;
     private Float cre;
@@ -38,7 +37,7 @@ public class LinhaArquivoDisciplina {
         this.periodoLetivo = NumberConverters.stringToInteger(row.getCell(8).getStringCellValue());
         this.media = NumberConverters.stringToFloat(row.getCell(9).getStringCellValue());
         this.frequencia = NumberConverters.stringToInteger(row.getCell(10).getStringCellValue());
-        this.situacao = converterSituacaoDisciplina(row.getCell(11).getStringCellValue());
+        this.situacao = row.getCell(11).getStringCellValue();
         this.idade = NumberConverters.stringToInteger(row.getCell(12).getStringCellValue());
         this.sexo = converterSexo(row.getCell(13).getStringCellValue());
         this.cre = NumberConverters.stringToFloat(row.getCell(14).getStringCellValue());
@@ -57,11 +56,5 @@ public class LinhaArquivoDisciplina {
             default:
                 return null;
         }
-    }
-
-    public SituacaoDisciplina converterSituacaoDisciplina(String situacao) {
-        situacao = situacao.replaceAll(" ", "_").toUpperCase();
-
-        return SituacaoDisciplina.valueOf(situacao);
     }
 }
