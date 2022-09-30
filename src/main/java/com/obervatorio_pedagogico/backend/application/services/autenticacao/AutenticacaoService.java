@@ -12,15 +12,14 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioCopedService;
-import com.obervatorio_pedagogico.backend.application.services.usuario.ProfessorService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioService;
+import com.obervatorio_pedagogico.backend.application.services.usuario.ProfessorService;
 import com.obervatorio_pedagogico.backend.application.services.utils.EmailService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.LoginInvalidoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioEmailDominioInvalido;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioJaExistenteException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioNaoPermitidoException;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Funcionario;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
 import com.obervatorio_pedagogico.backend.infrastructure.security.auth.JwtUtils;
@@ -29,8 +28,9 @@ import com.obervatorio_pedagogico.backend.infrastructure.security.service.Securi
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto.Tipo;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 
 import lombok.AllArgsConstructor;
 
@@ -76,9 +76,9 @@ public class AutenticacaoService {
             throw new LoginInvalidoException();
         }
 
-        Optional<Funcionario> usuarioOp = funcionarioService.buscarFuncionarioByEmail(authRequest.getEmail());
+        Optional<EnvelopeFuncionario> usuarioOp = funcionarioService.buscarFuncionarioByEmail(authRequest.getEmail());
 
-        if (usuarioOp.isPresent() && !usuarioOp.get().isAtivo()) {
+        if (usuarioOp.isPresent() && !usuarioOp.get().getFuncionario().isAtivo()) {
             throw new UsuarioNaoPermitidoException();
         }
         

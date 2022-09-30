@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
+import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FalhaArquivoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
@@ -32,6 +33,8 @@ import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.rabbitmq.MQConfig;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
@@ -43,6 +46,8 @@ import com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquiv
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquivos.LinhaArquivoDisciplina;
 import com.obervatorio_pedagogico.backend.presentation.model.queue.ArquivoQueue;
 import com.obervatorio_pedagogico.backend.presentation.model.queue.ExtracaoRequestQueue;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario.TipoFuncionario;
 
 import lombok.AllArgsConstructor;
 
@@ -58,11 +63,22 @@ public class ExtracaoService {
 
     private final ModelMapperService modelMapperService;
 
+    private final FuncionarioService funcionarioService;
+
     private final RabbitTemplate rabbitTemplate;
 
     public void adicionarNaFila(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
         extracao.setStatus(Status.AGUARDANDO_PROCESSAMENTO);
+
+        EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioByEmail(extracaoRequest.getEmailRemetente()).get();
+        if (envelopeFuncionario.isFuncionarioCoped()) {
+            extracao.setFuncionarioCopedRemetente((FuncionarioCoped) envelopeFuncionario.getFuncionario());
+            extracao.setTipoFuncionario(TipoFuncionario.FUNCIONARIO_COPED);
+        } else if (envelopeFuncionario.isProfessor()) {
+            extracao.setProfessorRemetente((Professor) envelopeFuncionario.getFuncionario());
+            extracao.setTipoFuncionario(TipoFuncionario.PROFESSOR);
+        }
 
         ExtracaoRequestQueue extracaoRequestAux = modelMapperService.convert(extracao, ExtracaoRequestQueue.class);
         ArquivoQueue arquivoDisciplinaQueue;

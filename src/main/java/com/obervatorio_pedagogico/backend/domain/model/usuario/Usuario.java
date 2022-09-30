@@ -33,8 +33,6 @@ public abstract class Usuario {
     @Column(name = "email")
     protected String email;
 
-    
-
     @Column(name = "nome")
     protected String nome;
 

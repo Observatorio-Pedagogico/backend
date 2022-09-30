@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.application.controllers.extracao;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -43,7 +44,8 @@ public class ExtracaoController {
     private ResponseService responseService;
     
     @PostMapping("/enviar")
-    public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest) {
+    public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest, Principal principal) {
+        extracaoRequest.setEmailRemetente(principal.getName());
         extracaoService.adicionarNaFila(extracaoRequest);
         return responseService.create(null);
     }
