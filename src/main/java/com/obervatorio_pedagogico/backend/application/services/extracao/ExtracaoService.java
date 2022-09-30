@@ -15,6 +15,7 @@ import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
@@ -81,33 +82,49 @@ public class ExtracaoService {
         }
 
         ExtracaoRequestQueue extracaoRequestAux = modelMapperService.convert(extracao, ExtracaoRequestQueue.class);
-        ArquivoQueue arquivoDisciplinaQueue;
-        ArquivoQueue arquivoAlunoQueue;
+        List<ArquivoQueue> arquivoQueues = new ArrayList<>();
+        ArquivoQueue arquivoQueue;
+
+        for(MultipartFile file : extracaoRequest.getArquivosMultipartFile()) {
+            try {
+                arquivoQueue = new ArquivoQueue(
+                    file.getBytes(),
+                    file.getContentType()
+                );
+    
+                arquivoQueues.add(arquivoQueue);
+            } catch (IOException e) {
+                throw new FalhaArquivoException();
+            }
+        }
         
-        try {
-            arquivoDisciplinaQueue = new ArquivoQueue(
-                extracaoRequest.getArquivoDisciplina().getConteudo().getBytes(),
-                extracaoRequest.getArquivoDisciplina().getConteudo().getContentType()
-            );
-        } catch (NullPointerException nullPointerException) {
-            arquivoDisciplinaQueue = null;
-        } catch (IOException e) {
-            throw new FalhaArquivoException();
-        }
+        // try {
+        //     arquivoQueue = new ArquivoQueue(
+        //         arquivo.getConteudo().getBytes(),
+        //         arquivo.getConteudo().getContentType()
+        //     );
 
-        try {
-            arquivoAlunoQueue = new ArquivoQueue(
-                extracaoRequest.getArquivoAluno().getConteudo().getBytes(),
-                extracaoRequest.getArquivoAluno().getConteudo().getContentType()
-            );
-        } catch (NullPointerException nullPointerException) {
-            arquivoAlunoQueue = null;
-        } catch (IOException e) {
-            throw new FalhaArquivoException();
-        }
+        //     arquivoQueues.add(arquivoQueue);
+        // } catch (NullPointerException nullPointerException) {
+        //     arquivoDisciplinaQueue = null;
+        // } catch (IOException e) {
+        //     throw new FalhaArquivoException();
+        // }
 
-        extracaoRequestAux.setArquivoDisciplina(arquivoDisciplinaQueue);
-        extracaoRequestAux.setArquivoAluno(arquivoAlunoQueue);
+        // try {
+        //     arquivoAlunoQueue = new ArquivoQueue(
+        //         extracaoRequest.getArquivoAluno().getConteudo().getBytes(),
+        //         extracaoRequest.getArquivoAluno().getConteudo().getContentType()
+        //     );
+        // } catch (NullPointerException nullPointerException) {
+        //     arquivoAlunoQueue = null;
+        // } catch (IOException e) {
+        //     throw new FalhaArquivoException();
+        // }
+        
+        extracaoRequestAux.setArquivoQueues(arquivoQueues);
+        // extracaoRequestAux.setArquivoDisciplina(arquivoDisciplinaQueue);
+        // extracaoRequestAux.setArquivoAluno(arquivoAlunoQueue);
         rabbitTemplate.convertAndSend(MQConfig.EXTRACAO_EXCHANGE, MQConfig.ROUTING_KEY_ENTRADA, extracaoRequestAux);
     }
 
@@ -115,25 +132,34 @@ public class ExtracaoService {
     public void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
         Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
         ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
+        Arquivo arquivo = null;
 
-        try {
-            CustomMultipartFile customMultipartFileArquivoDisciplina = new CustomMultipartFile(extracaoRequestQueue.getArquivoDisciplina().getConteudoArquivo());
-            extracaoRequest.getArquivoDisciplina().setConteudo(customMultipartFileArquivoDisciplina);
+        extracaoRequest.setArquivos(new ArrayList<>());
+        for (int i = 0; i < extracaoRequestQueue.getArquivoQueues().size(); i++) {
+            CustomMultipartFile customMultipartFileArquivo = new CustomMultipartFile(extracaoRequestQueue.getArquivoQueues().get(i).getConteudoArquivo());
+            arquivo = new Arquivo();
+            arquivo.setConteudo(customMultipartFileArquivo);
+            extracaoRequest.getArquivos().add(arquivo);
+        }
 
-        } catch (NullPointerException nullPointerException) {}
+        // try {
+        //     CustomMultipartFile customMultipartFileArquivoDisciplina = new CustomMultipartFile(extracaoRequestQueue.getArquivoDisciplina().getConteudoArquivo());
+        //     extracaoRequest.getArquivoDisciplina().setConteudo(customMultipartFileArquivoDisciplina);
+
+        // } catch (NullPointerException nullPointerException) {}
         
-        try {
-            CustomMultipartFile customMultipartFileArquivoAluno = new CustomMultipartFile(extracaoRequestQueue.getArquivoAluno().getConteudoArquivo());
-            extracaoRequest.getArquivoAluno().setConteudo(customMultipartFileArquivoAluno);
+        // try {
+        //     CustomMultipartFile customMultipartFileArquivoAluno = new CustomMultipartFile(extracaoRequestQueue.getArquivoAluno().getConteudoArquivo());
+        //     extracaoRequest.getArquivoAluno().setConteudo(customMultipartFileArquivoAluno);
 
-        } catch (NullPointerException nullPointerException) {}
+        // } catch (NullPointerException nullPointerException) {}
 
-        processar(extracao, extracaoRequest.getArquivoDisciplina(), extracaoRequest.getArquivoAluno());
+        processar(extracao, extracaoRequest.getArquivos());
     }
 
-    public void processar(Extracao extracao, Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
-        validar(arquivoDisciplina, arquivoAluno);
-        lerArquivo(extracao, arquivoDisciplina, arquivoAluno);
+    public void processar(Extracao extracao, List<Arquivo> arquivos) {
+        validar(arquivos);
+        lerArquivo(extracao, arquivos);
     }
 
     public List<Extracao> getTodos() {
@@ -186,75 +212,85 @@ public class ExtracaoService {
         extracaoRepository.deleteById(extracao.getId());
     }
 
-    private void validar(Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
-        if (Objects.isNull(arquivoDisciplina) || Objects.isNull(arquivoAluno)) {
+    private void validar(List<Arquivo> arquivos) {
+        if (arquivos.size() < 2) {
             //TODO exception aqui
         }
-
-        if (Objects.nonNull(arquivoDisciplina))
-            validarArquivoDisciplina(arquivoDisciplina);
-        if (Objects.nonNull(arquivoAluno))
-            validarArquivoAluno(arquivoAluno);
+        for (Arquivo arquivo : arquivos) {
+            validarFormatoArquivo(arquivo);
+        }
     }
     
     private void validarFormatoArquivo(Arquivo arquivo) {
         if (!arquivo.isSuportado())
             throw new FormatoArquivoNaoSuportadoException(arquivo.getConteudo().getContentType());
     }
-    
-    private void validarArquivoDisciplina(Arquivo arquivo) {
-        validarFormatoArquivo(arquivo);
-    }
 
-    private void validarArquivoAluno(Arquivo arquivo) {
-        validarFormatoArquivo(arquivo);
-    }
-
-    private void lerArquivo(Extracao extracao, Arquivo arquivoDisciplina, Arquivo arquivoAluno) {
+    private void lerArquivo(Extracao extracao, List<Arquivo> arquivos ) {
         try {
-            Workbook workbookDisciplina = null;
-            Workbook workbookAluno = null;
-            Sheet sheetDisciplina = null;
-            Sheet sheetAluno = null;
+            Workbook workbook = null;
+            List<Sheet> sheets = new ArrayList<>();
 
-            if (Objects.nonNull(arquivoDisciplina)) {
-                workbookDisciplina = WorkbookFactory.create(arquivoDisciplina.getConteudo().getInputStream());
-                sheetDisciplina = workbookDisciplina.getSheetAt(0);
+            for (Arquivo arquivo : arquivos) {
+                workbook = WorkbookFactory.create(arquivo.getConteudo().getInputStream());
+                sheets.add(workbook.getSheetAt(0));
             }
-            if (Objects.nonNull(arquivoAluno)) {
-                workbookAluno = WorkbookFactory.create(arquivoAluno.getConteudo().getInputStream());
-                sheetAluno = workbookAluno.getSheetAt(0);
-            }
+
+            // if (Objects.nonNull(arquivoDisciplina)) {
+            //     workbookDisciplina = 
+            //     sheetDisciplina = 
+            // }
+            // if (Objects.nonNull(arquivoAluno)) {
+            //     workbookAluno = WorkbookFactory.create(arquivoAluno.getConteudo().getInputStream());
+            //     sheetAluno = workbookAluno.getSheetAt(0);
+            // }
             
-            iniciarThread(extracao, sheetDisciplina, sheetAluno);
+            iniciarThread(extracao, sheets);
 
-            if (Objects.nonNull(workbookDisciplina))
-                workbookDisciplina.close();
-            if (Objects.nonNull(workbookAluno))
-                workbookAluno.close();
+            // if (Objects.nonNull(workbookDisciplina))
+            //     workbookDisciplina.close();
+            // if (Objects.nonNull(workbookAluno))
+            //     workbookAluno.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
     @Transactional
-    private void iniciarThread(Extracao extracao, Sheet sheetDisciplina, Sheet sheetAluno) {
+    private void iniciarThread(Extracao extracao, List<Sheet> sheets) {
+        ArquivoDisciplina arquivoDisciplina = null;
+        ArquivoAluno arquivoAluno = null;
+        
         ExtracaoThread thread = new ExtracaoThread();
         thread.setExtracao(extracao);
         Uploader.getInstance().addThread(thread);
-
-        thread.setTotalLinhas(obterTotalLinhas(sheetDisciplina) + obterTotalLinhas(sheetAluno));
+        for (Sheet sheet : sheets) {
+            if (ArquivoDisciplina.isConversivel(sheet)) {
+                arquivoDisciplina = new ArquivoDisciplina(sheet);
+            } else if (ArquivoAluno.isConversivel(sheet)) {
+                arquivoAluno = new ArquivoAluno(sheet);
+            }
+            thread.setTotalLinhas(thread.getTotalLinhas() + sheet.getLastRowNum());
+        }
+        validarConversao(arquivoDisciplina, arquivoAluno);
+        
         iniciarOperacao(extracao);
-        cadastrarExtracaoDisciplina(extracao, sheetDisciplina, thread);
-        cadastrarExtracaoAluno(extracao, sheetAluno, thread);
+        cadastrarExtracaoDisciplina(extracao, arquivoDisciplina, thread);
+        cadastrarExtracaoAluno(extracao, arquivoAluno, thread);
         salvarOperacao(extracao);
     }
 
-    private void cadastrarExtracaoDisciplina(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
-        if (Objects.isNull(sheet)) return;
+    private void validarConversao(ArquivoDisciplina arquivoDisciplina, ArquivoAluno arquivoAluno) {
+        if (Objects.isNull(arquivoDisciplina) || Objects.isNull(arquivoAluno)) {
+            // TODO exception de erro na conversao do arquivo
+            throw new RuntimeException("ERRO NA CONVERSAO DO ARQUIVOS");
+        }
+    }
+
+    private void cadastrarExtracaoDisciplina(Extracao extracao, ArquivoDisciplina arquivoDisciplina, ExtracaoThread extracaoThread) {
+        if (Objects.isNull(arquivoDisciplina)) return;
 
         Aluno aluno = null;
-        ArquivoDisciplina arquivoDisciplina = new ArquivoDisciplina(sheet);
         Integer threadQuantidadeLinhas = extracaoThread.getLinhaAtual();
 
         for (int i = 0; i < arquivoDisciplina.getLinhas().size(); i++) {
@@ -285,11 +321,10 @@ public class ExtracaoService {
         }
     }
 
-    private void cadastrarExtracaoAluno(Extracao extracao, Sheet sheet, ExtracaoThread extracaoThread) {
-        if (Objects.isNull(sheet)) return;
+    private void cadastrarExtracaoAluno(Extracao extracao, ArquivoAluno arquivoAluno, ExtracaoThread extracaoThread) {
+        if (Objects.isNull(arquivoAluno)) return;
 
         Aluno aluno = null;
-        ArquivoAluno arquivoAluno = new ArquivoAluno(sheet);
         Integer threadQuantidadeLinhas = extracaoThread.getLinhaAtual();
 
         for (int i = 0; i < arquivoAluno.getLinhas().size(); i++) {
@@ -475,12 +510,5 @@ public class ExtracaoService {
         extracao.setStatus(Status.ATIVA);
         extracaoRepository.save(extracao);
         System.out.println(Status.ATIVA);
-    }
-
-    private Integer obterTotalLinhas(Sheet sheet) {
-        if (Objects.isNull(sheet)) {
-            return 0;
-        }
-        return sheet.getLastRowNum();
     }
 }

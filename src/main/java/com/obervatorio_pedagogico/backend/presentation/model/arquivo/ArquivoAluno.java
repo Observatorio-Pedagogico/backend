@@ -3,6 +3,7 @@ package com.obervatorio_pedagogico.backend.presentation.model.arquivo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Stream;
 
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -25,6 +26,24 @@ public class ArquivoAluno {
 
             linhas.add(new LinhaArquivoAluno(linha));
         }
+    }
+
+    public static Boolean isConversivel(Sheet sheet) {
+        LinhaArquivoAluno linha;
+
+        try {
+            linha = new LinhaArquivoAluno(sheet.getRow(1));
+        } catch (Exception exception) {
+            return false;
+        }
+
+        return Stream.of(linha.getMatricula(),
+            linha.getCodigoDisciplina(),
+            linha.getNomeDisciplina(),
+            linha.getPeriodo(),
+            linha.getNotas(),
+            linha.getFrequencia())
+            .allMatch(Objects::nonNull);
     }
 
     public Boolean proximoEMesmoAluno(Integer indexAtual) {

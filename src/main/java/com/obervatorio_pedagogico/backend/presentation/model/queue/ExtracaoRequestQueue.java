@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.presentation.model.queue;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
@@ -37,7 +38,5 @@ public class ExtracaoRequestQueue implements Serializable {
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private ArquivoQueue arquivoDisciplina;
-    
-    private ArquivoQueue arquivoAluno;
+    private List<ArquivoQueue> arquivoQueues;
 }
