@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
+import com.obervatorio_pedagogico.backend.infrastructure.security.auth.JwtUtils;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario.TipoFuncionario;
 
@@ -19,7 +20,9 @@ public class FuncionarioService {
 
     private ProfessorService professorService;
 
-    public Optional<EnvelopeFuncionario> buscarFuncionarioByEmail(String email) {
+    private JwtUtils jwtUtils;
+
+    public Optional<EnvelopeFuncionario> buscarFuncionarioPorEmail(String email) {
         Optional<FuncionarioCoped> funcionarioCopedOp = funcionarioCopedService.buscarPorEmail(email);
         Optional<Professor> professorOp;
         EnvelopeFuncionario envelopeFuncionario;
@@ -43,6 +46,12 @@ public class FuncionarioService {
         }
 
         return Optional.empty();
+    }
+
+    public Optional<EnvelopeFuncionario> buscarFuncionarioPorToken(String token) {
+        String email = jwtUtils.extractEmail(token);
+
+        return buscarFuncionarioPorEmail(email);
     }
 
     public boolean existeFuncionarioCadastrado() {

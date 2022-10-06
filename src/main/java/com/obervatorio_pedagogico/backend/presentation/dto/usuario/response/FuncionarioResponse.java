@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.auth;
+package com.obervatorio_pedagogico.backend.presentation.dto.usuario.response;
 
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 
@@ -11,21 +11,13 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class CadastroUsuarioDto {
+public class FuncionarioResponse {
 
     private String matricula;
 
     private String email;
 
-    private String senha;
-
     private String nome;
 
     private Sexo sexo;
-
-    private Tipo tipo;
-
-    public enum Tipo {
-        COPED, PROFESSOR
-    }
 }

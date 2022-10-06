@@ -1,11 +1,13 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
+package com.obervatorio_pedagogico.backend.presentation.dto.extracao.request;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
-import com.obervatorio_pedagogico.backend.presentation.dto.disciplina.DisciplinaResponse;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.Arquivo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -16,13 +18,9 @@ import lombok.Setter;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExtracaoResponse implements Serializable {
+public class ExtracaoRequest implements Serializable {
 
     private Long id;
-
-    private Integer porcentagemDeEnvio = 0;
-
-    private Integer totalLinhas = 0;
 
     private String titulo;
 
@@ -31,10 +29,12 @@ public class ExtracaoResponse implements Serializable {
     private Status status;
 
     private String periodoLetivo;
-    
-    private LocalDateTime dataCadastro;
+
+    private String emailRemetente;
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private List<DisciplinaResponse> disciplinas;
+    private List<MultipartFile> arquivosMultipartFile;
+
+    private List<Arquivo> arquivos;
 }

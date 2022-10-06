@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.usuario;
+package com.obervatorio_pedagogico.backend.presentation.dto.usuario.response;
 
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped.TipoCargo;
 
@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class FuncionarioCopedDto extends UsuarioDto {
+public class FuncionarioCopedResponse extends FuncionarioResponse {
 
     private TipoCargo cargo;
 }

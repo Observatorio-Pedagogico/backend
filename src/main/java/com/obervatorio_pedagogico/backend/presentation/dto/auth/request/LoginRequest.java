@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.auth;
+package com.obervatorio_pedagogico.backend.presentation.dto.auth.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

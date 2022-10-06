@@ -26,10 +26,10 @@ import com.obervatorio_pedagogico.backend.infrastructure.security.auth.JwtUtils;
 import com.obervatorio_pedagogico.backend.infrastructure.security.auth.SharUtils;
 import com.obervatorio_pedagogico.backend.infrastructure.security.service.SecurityService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.AuthResponse;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto.Tipo;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest.Tipo;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.response.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 
 import lombok.AllArgsConstructor;
@@ -76,7 +76,7 @@ public class AutenticacaoService {
             throw new LoginInvalidoException();
         }
 
-        Optional<EnvelopeFuncionario> usuarioOp = funcionarioService.buscarFuncionarioByEmail(authRequest.getEmail());
+        Optional<EnvelopeFuncionario> usuarioOp = funcionarioService.buscarFuncionarioPorEmail(authRequest.getEmail());
 
         if (usuarioOp.isPresent() && !usuarioOp.get().getFuncionario().isAtivo()) {
             throw new UsuarioNaoPermitidoException();
@@ -89,7 +89,7 @@ public class AutenticacaoService {
         return new AuthResponse(token);
     }
 
-    public Usuario cadastrar(CadastroUsuarioDto cadastroUsuarioDto) {
+    public Usuario cadastrar(CadastroUsuarioRequest cadastroUsuarioDto) {
         this.validarCadastro(cadastroUsuarioDto);
 
         boolean isPrimeiro = !funcionarioService.existeFuncionarioCadastrado();
@@ -140,7 +140,7 @@ public class AutenticacaoService {
         return professorService.listarEsperaCadastro();
     }
 
-    private void validarCadastro(CadastroUsuarioDto cadastroUsuarioDto) {
+    private void validarCadastro(CadastroUsuarioRequest cadastroUsuarioDto) {
         if (!emailService.isDominioValido(cadastroUsuarioDto.getEmail())) {
             throw new UsuarioEmailDominioInvalido();
         }

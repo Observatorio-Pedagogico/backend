@@ -42,8 +42,8 @@ import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.rabbitmq.MQConfig;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.Arquivo;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.Arquivo;
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.ArquivoAluno;
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.ArquivoDisciplina;
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquivos.LinhaArquivoAluno;
@@ -75,7 +75,7 @@ public class ExtracaoService {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
         extracao.setStatus(Status.AGUARDANDO_PROCESSAMENTO);
 
-        EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioByEmail(extracaoRequest.getEmailRemetente()).get();
+        EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioPorEmail(extracaoRequest.getEmailRemetente()).get();
         if (envelopeFuncionario.isFuncionarioCoped()) {
             extracao.setFuncionarioCopedRemetente((FuncionarioCoped) envelopeFuncionario.getFuncionario());
             extracao.setTipoFuncionario(TipoFuncionario.FUNCIONARIO_COPED);

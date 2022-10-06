@@ -21,10 +21,10 @@ import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoResponse;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoResponseResumido;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoThreadResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponseResumido;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoThreadResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 
 import lombok.AllArgsConstructor;
