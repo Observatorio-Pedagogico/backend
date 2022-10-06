@@ -26,6 +26,11 @@ spring:
       max-request-size: 10MB
   
   rabbitmq:
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 1
     addresses: localhost:5672
     username: user
     password: user

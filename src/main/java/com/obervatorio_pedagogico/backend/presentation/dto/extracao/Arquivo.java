@@ -1,7 +1,6 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
 
 import java.io.Serializable;
-import java.util.Objects;
 
 import org.springframework.web.multipart.MultipartFile;
 
@@ -23,19 +22,11 @@ public class Arquivo implements Serializable {
 
     private String tipo;
 
-    private void initTipo() {
-        if(Objects.isNull(tipo))
-            tipo = "application/vnd.ms-excel"; //TODO REMOVER ISSO AQUI
-            // tipo = conteudo.getContentType();
-    }
-
     public boolean isXls() {
-        initTipo();
         return tipo.equals(XLS_CODE);
     }
 
     public boolean isXlsx() {
-        initTipo();
         return tipo.equals(XLSX_CODE);
     }
 

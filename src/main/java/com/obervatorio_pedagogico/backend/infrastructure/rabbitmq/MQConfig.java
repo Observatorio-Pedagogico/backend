@@ -16,8 +16,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class MQConfig {
     
-    public static final String EXTRACAO_QUEUE_ENTRADA = "cobranca_queue_entrada";
-    public static final String EXTRACAO_QUEUE_SAIDA = "cobranca_queue_saida";
+    public static final String EXTRACAO_QUEUE_ENTRADA = "extracao_queue_entrada";
+    public static final String EXTRACAO_QUEUE_SAIDA = "extracao_queue_saida";
     public static final String EXTRACAO_EXCHANGE = "extracao_exchange";
     public static final String ROUTING_KEY_ENTRADA = "extracao_routingKey_entrada";
 
