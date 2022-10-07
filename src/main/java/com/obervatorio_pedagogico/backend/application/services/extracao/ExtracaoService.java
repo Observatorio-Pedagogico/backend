@@ -52,6 +52,7 @@ import com.obervatorio_pedagogico.backend.presentation.model.queue.ArquivoQueue;
 import com.obervatorio_pedagogico.backend.presentation.model.queue.ExtracaoRequestQueue;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario.TipoFuncionario;
+import com.querydsl.core.types.Predicate;
 
 import lombok.AllArgsConstructor;
 
@@ -129,8 +130,8 @@ public class ExtracaoService {
         lerArquivo(extracao, arquivos);
     }
 
-    public Page<Extracao> getTodos(Pageable pageable) {
-        Page<Extracao> extracoes = extracaoRepository.findAll(pageable);
+    public Page<Extracao> getTodos(Pageable pageable, Predicate predicate) {
+        Page<Extracao> extracoes = extracaoRepository.findAll(predicate, pageable);
         if(extracoes.isEmpty()){
             throw new NaoEncontradoException();
         }
@@ -143,22 +144,6 @@ public class ExtracaoService {
             throw new NaoEncontradoException();
         }
         return extracao.get();
-    }
-
-    public List<Extracao> getByStatus(Status status){
-        List<Extracao> extracoes = extracaoRepository.findByStatus(status);
-        if(extracoes.isEmpty()){
-            throw new NaoEncontradoException();
-        }
-        return extracoes;
-    }
-
-    public List<Extracao> getByPeriodoLetivo(String periodoLetivo){
-        List<Extracao> extracoes = extracaoRepository.findByPeriodoLetivo(periodoLetivo);
-        if(extracoes.isEmpty()){
-            throw new NaoEncontradoException();
-        }
-        return extracoes;
     }
 
     public void deletaExtracao(Long id){

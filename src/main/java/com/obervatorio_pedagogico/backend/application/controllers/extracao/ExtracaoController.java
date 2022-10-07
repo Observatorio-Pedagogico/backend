@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
+import com.querydsl.core.types.dsl.BooleanExpression;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -19,9 +20,11 @@ import com.obervatorio_pedagogico.backend.application.services.extracao.Extracao
 import com.obervatorio_pedagogico.backend.application.services.extracao.ExtracaoThreadService;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
+import com.obervatorio_pedagogico.backend.infrastructure.utils.buscaConstrutor.PredicatesGenerator;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.busca.ExtracaoBuscaRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponseResumido;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoThreadResponse;
@@ -42,6 +45,8 @@ public class ExtracaoController {
     private ModelMapperService modelMapperService;
 
     private ResponseService responseService;
+
+    private PredicatesGenerator predicatesGenerator;
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest, Principal principal) {
@@ -70,14 +75,11 @@ public class ExtracaoController {
     }
 
     @GetMapping()
-    public ResponseEntity<Response<Page<ExtracaoResponseResumido>>> getTodos(Pageable pageable){
-        Page<Extracao> extracaoPagina = extracaoService.getTodos(pageable);
+    public ResponseEntity<Response<Page<ExtracaoResponseResumido>>> getTodos(Pageable pageable, ExtracaoBuscaRequest extracaoBuscaRequest){
+        BooleanExpression predicate = predicatesGenerator.add(extracaoBuscaRequest).build();
+        Page<Extracao> extracaoPagina = extracaoService.getTodos(pageable, predicate);
         
         return responseService.ok(modelMapperService.convert(extracaoPagina, ExtracaoResponseResumido.class));
-        // return responseService.ok(extracoes.stream()
-        // .map(element -> modelMapperService
-        //     .convert(element, ExtracaoResponseResumido.class))
-        // .collect(Collectors.toList()));
     }
 
     @DeleteMapping("/{id}")
