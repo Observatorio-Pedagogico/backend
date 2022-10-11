@@ -12,7 +12,7 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoExcepti
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.usuario.request.FuncionarioRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.FuncionarioResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.EnvelopeFuncionarioResponse;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 
@@ -31,10 +31,10 @@ public class FuncionarioController {
     private ModelMapperService modelMapperService;
     
     @GetMapping("/token")
-    public ResponseEntity<Response<FuncionarioResponse>> getTodos(@RequestBody FuncionarioRequest funcionarioRequest){
+    public ResponseEntity<Response<EnvelopeFuncionarioResponse>> getTodos(@RequestBody FuncionarioRequest funcionarioRequest){
         EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioPorToken(funcionarioRequest.getToken())
             .orElseThrow(() -> new NaoEncontradoException());
 
-        return responseService.ok(modelMapperService.convert(envelopeFuncionario.getFuncionario(), FuncionarioResponse.class));
+        return responseService.ok(modelMapperService.convert(envelopeFuncionario, EnvelopeFuncionarioResponse.class));
     }
 }
