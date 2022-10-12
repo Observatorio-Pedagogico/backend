@@ -55,6 +55,16 @@ public class ExtracaoController {
         return responseService.create(null);
     }
 
+    @PostMapping("/{id}/ativar")
+    public void ativar(@PathVariable Long id) {
+        extracaoService.ativar(id);
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public void cancelar(@PathVariable Long id) {
+        extracaoService.cancelar(id);
+    }
+
     @GetMapping("/envio-status/{id}")
     public ResponseEntity<Response<ExtracaoThreadResponse>> getEnvioStatus(@PathVariable Long id){
         ExtracaoThread extracaoThread = extracaoThreadService.getById(id);

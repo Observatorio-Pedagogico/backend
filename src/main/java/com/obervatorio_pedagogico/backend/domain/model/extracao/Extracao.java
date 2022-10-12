@@ -127,7 +127,6 @@ public class Extracao implements Serializable {
     }
 
     public void iniciar() {
-        this.setStatus(Status.ENVIANDO);
         this.setDataCadastro(LocalDateTime.now());
         this.setUltimaDataHoraAtualizacao(LocalDateTime.now());
     }
@@ -140,16 +139,8 @@ public class Extracao implements Serializable {
         return status.isCancelada();
     }
 
-    public boolean isEnviando() {
-        return status.isEnviando();
-    }
-
-    public boolean isAguardandoProcessamento() {
-        return status.isAguardandoProcessamento();
-    }
-
     public enum Status {
-        ATIVA, CANCELADA, ENVIANDO, AGUARDANDO_PROCESSAMENTO, SALVANDO;
+        ATIVA, CANCELADA;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -157,18 +148,6 @@ public class Extracao implements Serializable {
 
         public Boolean isCancelada() {
             return CANCELADA.equals(this);
-        }
-
-        public Boolean isEnviando() {
-            return ENVIANDO.equals(this);
-        }
-
-        public Boolean isAguardandoProcessamento() {
-            return AGUARDANDO_PROCESSAMENTO.equals(this);
-        }
-
-        public Boolean isSalvando() {
-            return SALVANDO.equals(this);
         }
     }
 }

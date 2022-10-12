@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -27,6 +28,7 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.ErroConversaoArquivo
 import com.obervatorio_pedagogico.backend.domain.exceptions.FalhaArquivoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
+import com.obervatorio_pedagogico.backend.domain.exceptions.OperacaoInvalidaException;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.customMultipartFile.CustomMultipartFile;
@@ -74,8 +76,7 @@ public class ExtracaoService {
 
     public void adicionarNaFila(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
-        extracao.setStatus(Status.AGUARDANDO_PROCESSAMENTO);
-
+        
         EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioPorEmail(extracaoRequest.getEmailRemetente()).get();
         if (envelopeFuncionario.isFuncionarioCoped()) {
             extracao.setFuncionarioCopedRemetente((FuncionarioCoped) envelopeFuncionario.getFuncionario());
@@ -106,29 +107,33 @@ public class ExtracaoService {
         rabbitTemplate.convertAndSend(MQConfig.EXTRACAO_EXCHANGE, MQConfig.ROUTING_KEY_ENTRADA, extracaoRequestAux);
     }
 
-    @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
-    public void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
-        Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
-        ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
-        Arquivo arquivo = null;
+    public void ativar(Long id) {
+        Extracao extracao = extracaoRepository.findById(id)
+            .orElseThrow(() -> new NaoEncontradoException());
 
-        extracaoRequest.setArquivos(new ArrayList<>());
-        for (int i = 0; i < extracaoRequestQueue.getArquivoQueues().size(); i++) {
-            CustomMultipartFile customMultipartFileArquivo = new CustomMultipartFile(extracaoRequestQueue.getArquivoQueues().get(i).getConteudoArquivo());
-            arquivo = new Arquivo();
-            arquivo.setConteudo(customMultipartFileArquivo);
-            arquivo.setTipo(extracaoRequestQueue.getArquivoQueues().get(i).getTipo());
-            extracaoRequest.getArquivos().add(arquivo);
+        if (extracao.isStatusAtiva()) {
+            throw new OperacaoInvalidaException("Extracao ja ativa");
+        }
+            
+        extracao.setStatus(Status.ATIVA);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+
+        extracaoRepository.save(extracao);
+    } 
+
+    public void cancelar(Long id) {
+        Extracao extracao = extracaoRepository.findById(id)
+            .orElseThrow(() -> new NaoEncontradoException());
+
+        if (extracao.isStatusCancelada()) {
+            throw new OperacaoInvalidaException("Extracao ja cancelada");
         }
 
-        processar(extracao, extracaoRequest.getArquivos());
-        
-    }
+        extracao.setStatus(Status.CANCELADA);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
 
-    public void processar(Extracao extracao, List<Arquivo> arquivos) {
-        validar(arquivos);
-        lerArquivo(extracao, arquivos);
-    }
+        extracaoRepository.save(extracao);
+    } 
 
     public Page<Extracao> getTodos(Pageable pageable, Predicate predicate) {
         Page<Extracao> extracoes = extracaoRepository.findAll(predicate, pageable);
@@ -162,6 +167,30 @@ public class ExtracaoService {
         });
         
         extracaoRepository.deleteById(extracao.getId());
+    }
+
+    @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
+    private void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
+        Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
+        ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
+        Arquivo arquivo = null;
+
+        extracaoRequest.setArquivos(new ArrayList<>());
+        for (int i = 0; i < extracaoRequestQueue.getArquivoQueues().size(); i++) {
+            CustomMultipartFile customMultipartFileArquivo = new CustomMultipartFile(extracaoRequestQueue.getArquivoQueues().get(i).getConteudoArquivo());
+            arquivo = new Arquivo();
+            arquivo.setConteudo(customMultipartFileArquivo);
+            arquivo.setTipo(extracaoRequestQueue.getArquivoQueues().get(i).getTipo());
+            extracaoRequest.getArquivos().add(arquivo);
+        }
+
+        processar(extracao, extracaoRequest.getArquivos());
+        
+    }
+
+    private void processar(Extracao extracao, List<Arquivo> arquivos) {
+        validar(arquivos);
+        lerArquivo(extracao, arquivos);
     }
 
     private void validar(List<Arquivo> arquivos) {
@@ -434,13 +463,9 @@ public class ExtracaoService {
 
     private void iniciarOperacao(Extracao extracao) {
         extracao.iniciar();
-        extracaoRepository.save(extracao);
     }
 
     private void salvarOperacao(Extracao extracao) {
-        extracao.setStatus(Status.SALVANDO);
-        extracaoRepository.save(extracao);
-        
         Uploader.getInstance().removeThread(extracao.getId());
 
         extracao = extracaoRepository.findById(extracao.getId()).get();
