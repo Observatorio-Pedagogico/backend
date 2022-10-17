@@ -1,6 +1,7 @@
 package com.obervatorio_pedagogico.backend.domain.model.usuario;
 
 import java.io.Serializable;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,16 +37,13 @@ public class Aluno extends Usuario implements Serializable {
     private LocalDate dataNascimento;
 
     @Column(name = "cre")
-    private Float cre;
+    private BigDecimal cre;
 
     @Column(name = "situacao_curso")
     private String situacaoCurso;
 
     @Column(name = "ano_ingresso")
     private Integer anoIngresso;
-
-    @Column(name = "situacao_ultimo_periodo")
-    private String situacaoUltimoPeriodo;
     
     @ManyToMany(fetch = FetchType.LAZY,
     mappedBy = "alunos")

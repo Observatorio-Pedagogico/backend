@@ -1,6 +1,8 @@
 package com.obervatorio_pedagogico.backend.domain.model.usuario;
 
 import javax.persistence.Column;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -37,6 +39,7 @@ public abstract class Usuario {
     protected String nome;
 
     @Column(name = "sexo")
+    @Enumerated(EnumType.STRING)
     protected Sexo sexo;
 
     @OneToOne

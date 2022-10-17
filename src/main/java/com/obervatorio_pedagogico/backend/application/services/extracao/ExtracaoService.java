@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -102,6 +103,10 @@ public class ExtracaoService {
                 throw new FalhaArquivoException();
             }
         }
+
+        extracao.setStatus(Status.PROCESSANDO);
+        extracao = extracaoRepository.save(extracao);
+        extracaoRequestAux.setId(extracao.getId());
         
         extracaoRequestAux.setArquivoQueues(arquivoQueues);
         rabbitTemplate.convertAndSend(MQConfig.EXTRACAO_EXCHANGE, MQConfig.ROUTING_KEY_ENTRADA, extracaoRequestAux);
@@ -172,11 +177,6 @@ public class ExtracaoService {
     @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
     private void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
         Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
-
-        extracao.setStatus(Status.PROCESSANDO);
-        extracao.setDataCadastro(LocalDateTime.now());
-        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
-        extracao =  extracaoRepository.save(extracao);
 
         ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
         Arquivo arquivo = null;
@@ -372,9 +372,8 @@ public class ExtracaoService {
         Aluno aluno = new Aluno();
         aluno.setMatricula(matricula);
         aluno.setNome(linhaArquivo.getNomeAluno());
-        aluno.setCre(linhaArquivo.getCre());
+        aluno.setCre(new BigDecimal(linhaArquivo.getCre()).setScale(2, RoundingMode.HALF_UP));
         aluno.setSexo(linhaArquivo.getSexo());
-        aluno.setSituacaoCurso(linhaArquivo.getSituacao());
         return aluno;
     }
 
@@ -398,6 +397,7 @@ public class ExtracaoService {
             frequenciaSituacao = new FrequenciaSituacao();
             frequenciaSituacao.setDisciplina(disciplina);
             frequenciaSituacao.setAluno(aluno);
+            frequenciaSituacao.setFrequencia(linhaArquivoDisciplina.getFrequencia());
             aluno.addFrequenciaSituacoes(frequenciaSituacao);
             disciplina.addFrequenciaSituacoes(frequenciaSituacao);
         }
@@ -476,7 +476,6 @@ public class ExtracaoService {
     private void salvarOperacao(Extracao extracao) {
         Uploader.getInstance().removeThread(extracao.getId());
 
-        extracao = extracaoRepository.findById(extracao.getId()).get();
         extracao.setStatus(Status.ATIVA);
         extracaoRepository.save(extracao);
         System.out.println(Status.ATIVA);

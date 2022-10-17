@@ -57,9 +57,6 @@ public class Extracao implements Serializable {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private Status status;
-
-    @Column(name = "periodo_letivo")
-    private String periodoLetivo;
     
     @OneToOne
     @JoinColumn(name = "id_funcionario_coped_remetente")
@@ -129,6 +126,7 @@ public class Extracao implements Serializable {
     public void iniciar() {
         this.setDataCadastro(LocalDateTime.now());
         this.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+        this.setStatus(Status.PROCESSANDO);
     }
 
     public boolean isStatusAtiva() {
