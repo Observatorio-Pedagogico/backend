@@ -126,7 +126,7 @@ public class Disciplina implements Serializable {
 
     public boolean hasExtracao(Extracao extracao) {
         return extracoes.stream().anyMatch(extrcaoFiltro -> (extrcaoFiltro.getTitulo().equals(extracao.getTitulo())) 
-            && extrcaoFiltro.getPeriodoLetivo().equals(extracao.getPeriodoLetivo()));
+            && extrcaoFiltro.getDescricao().equals(extracao.getDescricao()));
     }
 
     public boolean isPassivoDeletar() {
