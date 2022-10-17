@@ -29,6 +29,7 @@ services:
 
     rabbitmq:
       container_name: rabbitmq
+      restart: always
       image: rabbitmq:3.7.5-management-alpine
       ports:
           - "5672:5672"

@@ -14,12 +14,12 @@ import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.AuthResponse;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.FuncionarioCopedDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.ProfessorDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.UsuarioDto;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.response.AuthResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.FuncionarioCopedResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.FuncionarioResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.ProfessorResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 
 import lombok.AllArgsConstructor;
@@ -44,28 +44,28 @@ public class AutenticationController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<Response<UsuarioDto>> cadastrar(@RequestBody CadastroUsuarioDto cadastroUsuarioDto) {
+    public ResponseEntity<Response<FuncionarioResponse>> cadastrar(@RequestBody CadastroUsuarioRequest cadastroUsuarioDto) {
         Usuario usuario = autenticacaoService.cadastrar(cadastroUsuarioDto);
 
-        UsuarioDto dto = modelMapperService.convert(usuario, UsuarioDto.class);
+        FuncionarioResponse dto = modelMapperService.convert(usuario, FuncionarioResponse.class);
 
         return responseService.ok(dto);
     }
 
     @PostMapping("/espera-cadastro/coped/ativar/{id}")
-    public ResponseEntity<Response<FuncionarioCopedDto>> ativarFuncionarioCoped(@PathVariable Long id) {
+    public ResponseEntity<Response<FuncionarioCopedResponse>> ativarFuncionarioCoped(@PathVariable Long id) {
         FuncionarioCoped funcionarioCoped = autenticacaoService.ativarFuncionarioCoped(id);
 
-        FuncionarioCopedDto dto = modelMapperService.convert(funcionarioCoped, FuncionarioCopedDto.class);
+        FuncionarioCopedResponse dto = modelMapperService.convert(funcionarioCoped, FuncionarioCopedResponse.class);
         
         return responseService.ok(dto);
     }
 
     @PostMapping("/espera-cadastro/professor/ativar/{id}")
-    public ResponseEntity<Response<ProfessorDto>> ativarProfessor(@PathVariable Long id) {
+    public ResponseEntity<Response<ProfessorResponse>> ativarProfessor(@PathVariable Long id) {
         Professor professor = autenticacaoService.ativarProfessor(id);
 
-        ProfessorDto dto = modelMapperService.convert(professor, ProfessorDto.class);
+        ProfessorResponse dto = modelMapperService.convert(professor, ProfessorResponse.class);
         
         return responseService.ok(dto);
     }

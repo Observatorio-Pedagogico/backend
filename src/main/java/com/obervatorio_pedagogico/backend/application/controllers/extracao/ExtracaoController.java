@@ -3,8 +3,10 @@ package com.obervatorio_pedagogico.backend.application.controllers.extracao;
 import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import com.querydsl.core.types.dsl.BooleanExpression;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,13 +20,14 @@ import com.obervatorio_pedagogico.backend.application.services.extracao.Extracao
 import com.obervatorio_pedagogico.backend.application.services.extracao.ExtracaoThreadService;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
-import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
+import com.obervatorio_pedagogico.backend.infrastructure.utils.buscaConstrutor.PredicatesGenerator;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoResponse;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoResponseResumido;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoThreadResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.busca.ExtracaoBuscaRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponseResumido;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoThreadResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 
 import lombok.AllArgsConstructor;
@@ -42,12 +45,24 @@ public class ExtracaoController {
     private ModelMapperService modelMapperService;
 
     private ResponseService responseService;
+
+    private PredicatesGenerator predicatesGenerator;
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest, Principal principal) {
         extracaoRequest.setEmailRemetente(principal.getName());
         extracaoService.adicionarNaFila(extracaoRequest);
         return responseService.create(null);
+    }
+
+    @PostMapping("/{id}/ativar")
+    public void ativar(@PathVariable Long id) {
+        extracaoService.ativar(id);
+    }
+
+    @PostMapping("/{id}/cancelar")
+    public void cancelar(@PathVariable Long id) {
+        extracaoService.cancelar(id);
     }
 
     @GetMapping("/envio-status/{id}")
@@ -70,45 +85,16 @@ public class ExtracaoController {
     }
 
     @GetMapping()
-    public ResponseEntity<Response<List<ExtracaoResponseResumido>>> getTodos(){
-        List<Extracao> extracoes = extracaoService.getTodos();
+    public ResponseEntity<Response<Page<ExtracaoResponseResumido>>> getTodos(Pageable pageable, ExtracaoBuscaRequest extracaoBuscaRequest){
+        BooleanExpression predicate = predicatesGenerator.add(extracaoBuscaRequest).build();
+        Page<Extracao> extracaoPagina = extracaoService.getTodos(pageable, predicate);
         
-        return responseService.ok(extracoes.stream()
-        .map(element -> modelMapperService
-            .convert(element, ExtracaoResponseResumido.class))
-        .collect(Collectors.toList()));
-    }
-
-    @GetMapping("/get-by-id/{id}")
-    public ResponseEntity<Response<ExtracaoResponseResumido>> getById(@PathVariable Long id){
-        Extracao extracao = extracaoService.getById(id);
-
-        return responseService.ok(modelMapperService.convert(extracao, ExtracaoResponseResumido.class));
-    }
-
-    @GetMapping("/get-by-status")
-    public ResponseEntity<Response<List<ExtracaoResponseResumido>>> getByStatus(Status status){
-        List<Extracao> extracoes = extracaoService.getByStatus(status);
-
-        return responseService.ok(extracoes.stream()
-        .map(element -> modelMapperService
-            .convert(element, ExtracaoResponseResumido.class))
-        .collect(Collectors.toList()));
-    }
-
-    @GetMapping("/get-by-periodo-letivo")
-    public ResponseEntity<Response<List<ExtracaoResponseResumido>>> getByPeriodoLetivo(String periodoLetivo) {
-        List<Extracao> extracoes = extracaoService.getByPeriodoLetivo(periodoLetivo);
-
-        return responseService.ok(extracoes.stream()
-        .map(element -> modelMapperService
-            .convert(element, ExtracaoResponseResumido.class))
-        .collect(Collectors.toList()));
+        return responseService.ok(modelMapperService.convert(extracaoPagina, ExtracaoResponseResumido.class));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Response<String>> deletaExtracao(@PathVariable Long id){
         extracaoService.deletaExtracao(id);
-        return responseService.ok("deletado-com-sucesso");
+        return responseService.ok("deletado com sucesso");
     }
 }

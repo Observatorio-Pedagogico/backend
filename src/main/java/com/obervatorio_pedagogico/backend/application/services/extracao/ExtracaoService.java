@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.application.services.extracao;
 
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +14,8 @@ import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.ss.usermodel.WorkbookFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,9 +24,11 @@ import com.obervatorio_pedagogico.backend.application.services.disciplina.Discip
 import com.obervatorio_pedagogico.backend.application.services.uploader.Uploader;
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioService;
+import com.obervatorio_pedagogico.backend.domain.exceptions.ErroConversaoArquivoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FalhaArquivoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.FormatoArquivoNaoSuportadoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
+import com.obervatorio_pedagogico.backend.domain.exceptions.OperacaoInvalidaException;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.customMultipartFile.CustomMultipartFile;
@@ -39,8 +44,8 @@ import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.extracao.ExtracaoRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.rabbitmq.MQConfig;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.Arquivo;
-import com.obervatorio_pedagogico.backend.presentation.dto.extracao.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.ExtracaoRequest;
+import com.obervatorio_pedagogico.backend.presentation.model.arquivo.Arquivo;
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.ArquivoAluno;
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.ArquivoDisciplina;
 import com.obervatorio_pedagogico.backend.presentation.model.arquivo.linhaArquivos.LinhaArquivoAluno;
@@ -49,6 +54,7 @@ import com.obervatorio_pedagogico.backend.presentation.model.queue.ArquivoQueue;
 import com.obervatorio_pedagogico.backend.presentation.model.queue.ExtracaoRequestQueue;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario.TipoFuncionario;
+import com.querydsl.core.types.Predicate;
 
 import lombok.AllArgsConstructor;
 
@@ -70,9 +76,8 @@ public class ExtracaoService {
 
     public void adicionarNaFila(ExtracaoRequest extracaoRequest) {
         Extracao extracao = modelMapperService.convert(extracaoRequest, Extracao.class);
-        extracao.setStatus(Status.AGUARDANDO_PROCESSAMENTO);
-
-        EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioByEmail(extracaoRequest.getEmailRemetente()).get();
+        
+        EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioPorEmail(extracaoRequest.getEmailRemetente()).get();
         if (envelopeFuncionario.isFuncionarioCoped()) {
             extracao.setFuncionarioCopedRemetente((FuncionarioCoped) envelopeFuncionario.getFuncionario());
             extracao.setTipoFuncionario(TipoFuncionario.FUNCIONARIO_COPED);
@@ -98,72 +103,40 @@ public class ExtracaoService {
             }
         }
         
-        // try {
-        //     arquivoQueue = new ArquivoQueue(
-        //         arquivo.getConteudo().getBytes(),
-        //         arquivo.getConteudo().getContentType()
-        //     );
-
-        //     arquivoQueues.add(arquivoQueue);
-        // } catch (NullPointerException nullPointerException) {
-        //     arquivoDisciplinaQueue = null;
-        // } catch (IOException e) {
-        //     throw new FalhaArquivoException();
-        // }
-
-        // try {
-        //     arquivoAlunoQueue = new ArquivoQueue(
-        //         extracaoRequest.getArquivoAluno().getConteudo().getBytes(),
-        //         extracaoRequest.getArquivoAluno().getConteudo().getContentType()
-        //     );
-        // } catch (NullPointerException nullPointerException) {
-        //     arquivoAlunoQueue = null;
-        // } catch (IOException e) {
-        //     throw new FalhaArquivoException();
-        // }
-        
         extracaoRequestAux.setArquivoQueues(arquivoQueues);
-        // extracaoRequestAux.setArquivoDisciplina(arquivoDisciplinaQueue);
-        // extracaoRequestAux.setArquivoAluno(arquivoAlunoQueue);
         rabbitTemplate.convertAndSend(MQConfig.EXTRACAO_EXCHANGE, MQConfig.ROUTING_KEY_ENTRADA, extracaoRequestAux);
     }
 
-    @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
-    public void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
-        Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
-        ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
-        Arquivo arquivo = null;
+    public void ativar(Long id) {
+        Extracao extracao = extracaoRepository.findById(id)
+            .orElseThrow(() -> new NaoEncontradoException());
 
-        extracaoRequest.setArquivos(new ArrayList<>());
-        for (int i = 0; i < extracaoRequestQueue.getArquivoQueues().size(); i++) {
-            CustomMultipartFile customMultipartFileArquivo = new CustomMultipartFile(extracaoRequestQueue.getArquivoQueues().get(i).getConteudoArquivo());
-            arquivo = new Arquivo();
-            arquivo.setConteudo(customMultipartFileArquivo);
-            extracaoRequest.getArquivos().add(arquivo);
+        if (extracao.isStatusAtiva()) {
+            throw new OperacaoInvalidaException("Extracao ja ativa");
+        }
+            
+        extracao.setStatus(Status.ATIVA);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+
+        extracaoRepository.save(extracao);
+    } 
+
+    public void cancelar(Long id) {
+        Extracao extracao = extracaoRepository.findById(id)
+            .orElseThrow(() -> new NaoEncontradoException());
+
+        if (extracao.isStatusCancelada()) {
+            throw new OperacaoInvalidaException("Extracao ja cancelada");
         }
 
-        // try {
-        //     CustomMultipartFile customMultipartFileArquivoDisciplina = new CustomMultipartFile(extracaoRequestQueue.getArquivoDisciplina().getConteudoArquivo());
-        //     extracaoRequest.getArquivoDisciplina().setConteudo(customMultipartFileArquivoDisciplina);
+        extracao.setStatus(Status.CANCELADA);
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
 
-        // } catch (NullPointerException nullPointerException) {}
-        
-        // try {
-        //     CustomMultipartFile customMultipartFileArquivoAluno = new CustomMultipartFile(extracaoRequestQueue.getArquivoAluno().getConteudoArquivo());
-        //     extracaoRequest.getArquivoAluno().setConteudo(customMultipartFileArquivoAluno);
+        extracaoRepository.save(extracao);
+    } 
 
-        // } catch (NullPointerException nullPointerException) {}
-
-        processar(extracao, extracaoRequest.getArquivos());
-    }
-
-    public void processar(Extracao extracao, List<Arquivo> arquivos) {
-        validar(arquivos);
-        lerArquivo(extracao, arquivos);
-    }
-
-    public List<Extracao> getTodos() {
-        List<Extracao> extracoes = extracaoRepository.findAll();
+    public Page<Extracao> getTodos(Pageable pageable, Predicate predicate) {
+        Page<Extracao> extracoes = extracaoRepository.findAll(predicate, pageable);
         if(extracoes.isEmpty()){
             throw new NaoEncontradoException();
         }
@@ -176,22 +149,6 @@ public class ExtracaoService {
             throw new NaoEncontradoException();
         }
         return extracao.get();
-    }
-
-    public List<Extracao> getByStatus(Status status){
-        List<Extracao> extracoes = extracaoRepository.findByStatus(status);
-        if(extracoes.isEmpty()){
-            throw new NaoEncontradoException();
-        }
-        return extracoes;
-    }
-
-    public List<Extracao> getByPeriodoLetivo(String periodoLetivo){
-        List<Extracao> extracoes = extracaoRepository.findByPeriodoLetivo(periodoLetivo);
-        if(extracoes.isEmpty()){
-            throw new NaoEncontradoException();
-        }
-        return extracoes;
     }
 
     public void deletaExtracao(Long id){
@@ -212,6 +169,30 @@ public class ExtracaoService {
         extracaoRepository.deleteById(extracao.getId());
     }
 
+    @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
+    private void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
+        Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
+        ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
+        Arquivo arquivo = null;
+
+        extracaoRequest.setArquivos(new ArrayList<>());
+        for (int i = 0; i < extracaoRequestQueue.getArquivoQueues().size(); i++) {
+            CustomMultipartFile customMultipartFileArquivo = new CustomMultipartFile(extracaoRequestQueue.getArquivoQueues().get(i).getConteudoArquivo());
+            arquivo = new Arquivo();
+            arquivo.setConteudo(customMultipartFileArquivo);
+            arquivo.setTipo(extracaoRequestQueue.getArquivoQueues().get(i).getTipo());
+            extracaoRequest.getArquivos().add(arquivo);
+        }
+
+        processar(extracao, extracaoRequest.getArquivos());
+        
+    }
+
+    private void processar(Extracao extracao, List<Arquivo> arquivos) {
+        validar(arquivos);
+        lerArquivo(extracao, arquivos);
+    }
+
     private void validar(List<Arquivo> arquivos) {
         if (arquivos.size() < 2) {
             //TODO exception aqui
@@ -223,7 +204,7 @@ public class ExtracaoService {
     
     private void validarFormatoArquivo(Arquivo arquivo) {
         if (!arquivo.isSuportado())
-            throw new FormatoArquivoNaoSuportadoException(arquivo.getConteudo().getContentType());
+            throw new FormatoArquivoNaoSuportadoException(arquivo.getTipo());
     }
 
     private void lerArquivo(Extracao extracao, List<Arquivo> arquivos ) {
@@ -236,23 +217,9 @@ public class ExtracaoService {
                 sheets.add(workbook.getSheetAt(0));
             }
 
-            // if (Objects.nonNull(arquivoDisciplina)) {
-            //     workbookDisciplina = 
-            //     sheetDisciplina = 
-            // }
-            // if (Objects.nonNull(arquivoAluno)) {
-            //     workbookAluno = WorkbookFactory.create(arquivoAluno.getConteudo().getInputStream());
-            //     sheetAluno = workbookAluno.getSheetAt(0);
-            // }
-            
             iniciarThread(extracao, sheets);
-
-            // if (Objects.nonNull(workbookDisciplina))
-            //     workbookDisciplina.close();
-            // if (Objects.nonNull(workbookAluno))
-            //     workbookAluno.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -282,8 +249,7 @@ public class ExtracaoService {
 
     private void validarConversao(ArquivoDisciplina arquivoDisciplina, ArquivoAluno arquivoAluno) {
         if (Objects.isNull(arquivoDisciplina) || Objects.isNull(arquivoAluno)) {
-            // TODO exception de erro na conversao do arquivo
-            throw new RuntimeException("ERRO NA CONVERSAO DO ARQUIVOS");
+            throw new ErroConversaoArquivoException();
         }
     }
 
@@ -497,13 +463,9 @@ public class ExtracaoService {
 
     private void iniciarOperacao(Extracao extracao) {
         extracao.iniciar();
-        extracaoRepository.save(extracao);
     }
 
     private void salvarOperacao(Extracao extracao) {
-        extracao.setStatus(Status.SALVANDO);
-        extracaoRepository.save(extracao);
-        
         Uploader.getInstance().removeThread(extracao.getId());
 
         extracao = extracaoRepository.findById(extracao.getId()).get();

@@ -1,4 +1,4 @@
-package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
+package com.obervatorio_pedagogico.backend.presentation.dto.extracao.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
