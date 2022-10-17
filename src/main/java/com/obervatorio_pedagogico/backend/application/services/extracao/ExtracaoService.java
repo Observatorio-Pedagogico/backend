@@ -172,6 +172,12 @@ public class ExtracaoService {
     @RabbitListener(queues = {MQConfig.EXTRACAO_QUEUE_ENTRADA})
     private void cadastrar(ExtracaoRequestQueue extracaoRequestQueue) {
         Extracao extracao = modelMapperService.convert(extracaoRequestQueue, Extracao.class);
+
+        extracao.setStatus(Status.PROCESSANDO);
+        extracao.setDataCadastro(LocalDateTime.now());
+        extracao.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+        extracao =  extracaoRepository.save(extracao);
+
         ExtracaoRequest extracaoRequest = modelMapperService.convert(extracaoRequestQueue, ExtracaoRequest.class);
         Arquivo arquivo = null;
 
@@ -185,7 +191,6 @@ public class ExtracaoService {
         }
 
         processar(extracao, extracaoRequest.getArquivos());
-        
     }
 
     private void processar(Extracao extracao, List<Arquivo> arquivos) {
@@ -367,6 +372,9 @@ public class ExtracaoService {
         Aluno aluno = new Aluno();
         aluno.setMatricula(matricula);
         aluno.setNome(linhaArquivo.getNomeAluno());
+        aluno.setCre(linhaArquivo.getCre());
+        aluno.setSexo(linhaArquivo.getSexo());
+        aluno.setSituacaoCurso(linhaArquivo.getSituacao());
         return aluno;
     }
 
