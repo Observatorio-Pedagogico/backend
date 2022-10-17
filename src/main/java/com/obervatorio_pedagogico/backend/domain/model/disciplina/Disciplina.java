@@ -73,13 +73,6 @@ public class Disciplina implements Serializable {
         cascade = CascadeType.ALL,
         orphanRemoval = true
     )
-    private List<Nota> notas = new ArrayList<>();
-
-    @OneToMany(
-        mappedBy = "disciplina", 
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
     private List<FrequenciaSituacao> frequenciaSituacoes = new ArrayList<>();
 
     @ManyToMany(fetch = FetchType.LAZY,
@@ -105,6 +98,16 @@ public class Disciplina implements Serializable {
         return false;
     }
 
+    public boolean addFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        return frequenciaSituacoes.add(frequenciaSituacao);
+    }
+
+    public boolean removeFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        Integer tamanhoFrequenciaSituacoes = this.frequenciaSituacoes.size();
+        this.frequenciaSituacoes = this.frequenciaSituacoes.stream().filter(freq -> !freq.getId().equals(frequenciaSituacao.getId())).collect(Collectors.toList());
+        return tamanhoFrequenciaSituacoes > this.frequenciaSituacoes.size();
+    }
+
     public boolean removeAluno(Aluno aluno) {
         Integer tamanhoAlunos = this.alunos.size();
         this.alunos = alunos.stream().filter(alu -> !alu.getId().equals(aluno.getId())).collect(Collectors.toList());
@@ -113,8 +116,7 @@ public class Disciplina implements Serializable {
 
     public boolean hasAlunos(Aluno aluno) {
         return alunos.stream()
-            .anyMatch(alunoFiltro ->(alunoFiltro.getNome().equals(aluno.getNome())
-            && alunoFiltro.getMatricula().equals(aluno.getMatricula())));
+            .anyMatch(alunoFiltro -> alunoFiltro.getMatricula().equals(aluno.getMatricula()));
     }
 
     public boolean hasAlunosById(Aluno aluno) {

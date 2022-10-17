@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -17,7 +16,6 @@ import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
-import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -49,13 +47,6 @@ public class Aluno extends Usuario implements Serializable {
     @Column(name = "situacao_ultimo_periodo")
     private String situacaoUltimoPeriodo;
     
-    @OneToMany(
-        mappedBy = "aluno", 
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
-    )
-    private List<Nota> notas = new ArrayList<>();
-    
     @ManyToMany(fetch = FetchType.LAZY,
     mappedBy = "alunos")
     private List<Disciplina> disciplinas = new ArrayList<>();
@@ -80,36 +71,22 @@ public class Aluno extends Usuario implements Serializable {
         return tamanhoDisciplinas > this.disciplinas.size();
     }
 
-    public boolean addNota(Nota nota) {
-        if (Objects.isNull(notas))
-            notas = new ArrayList<>();
-        if (!hasNota(nota))
-            return notas.add(nota);
-        return false;
+    public boolean addFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        return frequenciaSituacoes.add(frequenciaSituacao);
     }
 
-    public boolean removeNota(Nota nota) {
-        Integer tamanhoNotas = this.notas.size();
-        this.notas = this.notas.stream().filter(not -> !not.getId().equals(nota.getId())).collect(Collectors.toList());
-        return tamanhoNotas > this.notas.size();
+    public boolean removeFrequenciaSituacoes(FrequenciaSituacao frequenciaSituacao) {
+        Integer tamanhoFrequenciaSituacoes = this.frequenciaSituacoes.size();
+        this.frequenciaSituacoes = this.frequenciaSituacoes.stream().filter(freq -> !freq.getId().equals(frequenciaSituacao.getId())).collect(Collectors.toList());
+        return tamanhoFrequenciaSituacoes > this.frequenciaSituacoes.size();
     }
 
     public boolean hasDisciplina(Disciplina disciplina) {
         return disciplinas.stream()
             .anyMatch(disciplinaFiltro -> disciplinaFiltro.getCodigo().equals(disciplina.getCodigo())
             && disciplinaFiltro.getPeriodoLetivo().equals(disciplina.getPeriodoLetivo()));
-    } 
-    
-    public boolean hasNota(Nota nota) {
-        return notas.stream()
-            .anyMatch(notaFiltro -> notaFiltro.getId().equals(nota.getId()) 
-            || (notaFiltro.getValor().equals(nota.getValor())
-                && notaFiltro.getOrdem().equals(nota.getOrdem())
-                && notaFiltro.getTipo().equals(nota.getTipo())
-                && notaFiltro.getDisciplina().equals(nota.getDisciplina())
-                && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo())));
     }
-
+    
     public boolean isPassivoDeletar() {
         return this.disciplinas.isEmpty();
     }

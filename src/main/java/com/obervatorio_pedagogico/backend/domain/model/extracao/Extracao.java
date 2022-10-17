@@ -19,10 +19,14 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario.TipoFuncionario;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,6 +60,18 @@ public class Extracao implements Serializable {
 
     @Column(name = "periodo_letivo")
     private String periodoLetivo;
+    
+    @OneToOne
+    @JoinColumn(name = "id_funcionario_coped_remetente")
+    private FuncionarioCoped funcionarioCopedRemetente;
+
+    @OneToOne
+    @JoinColumn(name = "id_professor_remetente")
+    private Professor professorRemetente;
+
+    @Column(name = "tipo_remetente")
+    @Enumerated(EnumType.STRING)
+    private TipoFuncionario tipoFuncionario;
     
     @Column(name = "data_cadastro")
     private LocalDateTime dataCadastro;
@@ -108,6 +124,12 @@ public class Extracao implements Serializable {
             .flatMap(disciplina -> disciplina.getAlunos().stream())
             .filter(aluno -> aluno.getMatricula().equals(matricula))
             .findAny();
+    }
+
+    public void iniciar() {
+        this.setStatus(Status.ENVIANDO);
+        this.setDataCadastro(LocalDateTime.now());
+        this.setUltimaDataHoraAtualizacao(LocalDateTime.now());
     }
 
     public boolean isStatusAtiva() {

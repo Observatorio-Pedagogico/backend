@@ -12,8 +12,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioCopedService;
+import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioService;
 import com.obervatorio_pedagogico.backend.application.services.usuario.ProfessorService;
-import com.obervatorio_pedagogico.backend.application.services.usuario.UsuarioService;
 import com.obervatorio_pedagogico.backend.application.services.utils.EmailService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.LoginInvalidoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.UsuarioEmailDominioInvalido;
@@ -28,8 +28,9 @@ import com.obervatorio_pedagogico.backend.infrastructure.security.service.Securi
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.CadastroUsuarioDto.Tipo;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.LoginRequest;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 
 import lombok.AllArgsConstructor;
 
@@ -45,7 +46,7 @@ public class AutenticacaoService {
 
     private ProfessorService professorService;
 
-    private UsuarioService usuarioService;
+    private FuncionarioService funcionarioService;
 
     private AuthenticationManager authenticationManager;
 
@@ -75,9 +76,9 @@ public class AutenticacaoService {
             throw new LoginInvalidoException();
         }
 
-        Optional<Usuario> usuarioOp = usuarioService.buscarUsuarioByEmail(authRequest.getEmail());
+        Optional<EnvelopeFuncionario> usuarioOp = funcionarioService.buscarFuncionarioByEmail(authRequest.getEmail());
 
-        if (usuarioOp.isPresent() && !usuarioOp.get().isAtivo()) {
+        if (usuarioOp.isPresent() && !usuarioOp.get().getFuncionario().isAtivo()) {
             throw new UsuarioNaoPermitidoException();
         }
         
@@ -91,7 +92,7 @@ public class AutenticacaoService {
     public Usuario cadastrar(CadastroUsuarioDto cadastroUsuarioDto) {
         this.validarCadastro(cadastroUsuarioDto);
 
-        boolean isPrimeiro = !usuarioService.existeUsuarioCadastrado();
+        boolean isPrimeiro = !funcionarioService.existeFuncionarioCadastrado();
 
         String senha = null;
         try {

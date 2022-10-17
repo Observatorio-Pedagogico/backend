@@ -2,6 +2,9 @@ package com.obervatorio_pedagogico.backend.presentation.dto.extracao;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.web.multipart.MultipartFile;
 
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
 
@@ -26,7 +29,11 @@ public class ExtracaoRequest implements Serializable {
 
     private String periodoLetivo;
 
+    private String emailRemetente;
+
     private LocalDateTime ultimaDataHoraAtualizacao;
 
-    private Arquivo arquivo;
+    private List<MultipartFile> arquivosMultipartFile;
+
+    private List<Arquivo> arquivos;
 }

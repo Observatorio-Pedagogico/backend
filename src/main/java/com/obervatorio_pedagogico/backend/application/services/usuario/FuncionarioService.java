@@ -6,36 +6,46 @@ import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario.TipoFuncionario;
 
 import lombok.AllArgsConstructor;
 
 @Service
 @AllArgsConstructor
-public class UsuarioService {
+public class FuncionarioService {
 
     private FuncionarioCopedService funcionarioCopedService;
 
     private ProfessorService professorService;
 
-    public Optional<Usuario> buscarUsuarioByEmail(String email) {
+    public Optional<EnvelopeFuncionario> buscarFuncionarioByEmail(String email) {
         Optional<FuncionarioCoped> funcionarioCopedOp = funcionarioCopedService.buscarPorEmail(email);
         Optional<Professor> professorOp;
+        EnvelopeFuncionario envelopeFuncionario;
 
         if (funcionarioCopedOp.isPresent()) {
-            return Optional.of(funcionarioCopedOp.get());
+            envelopeFuncionario = new EnvelopeFuncionario(
+                funcionarioCopedOp.get(),
+                TipoFuncionario.FUNCIONARIO_COPED
+            );
+            return Optional.of(envelopeFuncionario);
         }
 
         professorOp = professorService.buscarPorEmail(email);
 
         if (professorOp.isPresent()) {
-            return Optional.of(professorOp.get());
+            envelopeFuncionario = new EnvelopeFuncionario(
+                professorOp.get(),
+                TipoFuncionario.PROFESSOR
+            );
+            return Optional.of(envelopeFuncionario);
         }
 
         return Optional.empty();
     }
 
-    public boolean existeUsuarioCadastrado() {
+    public boolean existeFuncionarioCadastrado() {
         return funcionarioCopedService.count() > 0 || professorService.count() > 0;
     }
 }

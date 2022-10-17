@@ -25,7 +25,8 @@ public class Arquivo implements Serializable {
 
     private void initTipo() {
         if(Objects.isNull(tipo))
-            tipo = conteudo.getContentType();
+            tipo = "application/vnd.ms-excel"; //TODO REMOVER ISSO AQUI
+            // tipo = conteudo.getContentType();
     }
 
     public boolean isXls() {
