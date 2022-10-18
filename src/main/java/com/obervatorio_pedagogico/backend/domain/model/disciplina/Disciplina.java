@@ -21,6 +21,7 @@ import javax.persistence.Table;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -131,5 +132,9 @@ public class Disciplina implements Serializable {
 
     public boolean isPassivoDeletar() {
         return this.getExtracoes().isEmpty();
+    }
+
+    public Integer getQuantidadeAlunosPorSexo(Sexo sexo) {
+        return (int) getAlunos().stream().filter(aluno -> aluno.getSexo().equals(sexo)).count();
     }
 }
