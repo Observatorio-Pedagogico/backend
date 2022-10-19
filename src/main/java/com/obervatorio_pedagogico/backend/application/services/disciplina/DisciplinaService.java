@@ -5,6 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -14,6 +16,7 @@ import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoExcepti
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
+import com.querydsl.core.types.Predicate;
 
 import lombok.AllArgsConstructor;
 
@@ -52,6 +55,17 @@ public class DisciplinaService {
         });
 
         disciplinaRepository.deleteById(disciplina.getId());
+    }
+
+    public List<Disciplina> buscar(Predicate predicate) {
+        Iterable<Disciplina> disciplinasIterable = disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo", "nome"));
+        List<Disciplina> disciplinas = StreamSupport.stream(disciplinasIterable.spliterator(), false)
+            .collect(Collectors.toList());
+
+        if (disciplinas.isEmpty())
+            throw new NaoEncontradoException();
+
+        return disciplinas;
     }
 
     public List<String> buscarListaPeriodos() {
