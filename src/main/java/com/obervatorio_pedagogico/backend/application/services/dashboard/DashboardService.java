@@ -16,6 +16,7 @@ import com.obervatorio_pedagogico.backend.domain.model.dashboard.Dashboard;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
+import com.querydsl.core.types.Predicate;
 
 import lombok.AllArgsConstructor;
 
@@ -24,14 +25,14 @@ import lombok.AllArgsConstructor;
 public class DashboardService {
     private final DisciplinaRepository disciplinaRepository;
 
-    public Dashboard gerarDashboardSexo() {
+    public Dashboard gerarDashboardSexo(Predicate predicate) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
 
         Dashboard dashboard = new Dashboard();
-        List<Disciplina> disciplinas = this.disciplinaRepository.findAll(Sort.by(Sort.Direction.ASC, "periodoLetivo"));
+        Iterable<Disciplina> disciplinas = this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo"));
 
-        disciplinas.stream().forEach(disciplina -> {
+        disciplinas.forEach(disciplina -> {
             criarConjuntoDadosSexo(disciplina, Sexo.FEMININO, mapConjuntoDados, legendaPeriodoLetivos);
             criarConjuntoDadosSexo(disciplina, Sexo.MASCULINO, mapConjuntoDados, legendaPeriodoLetivos);
             criarConjuntoTotalDadosSexo(disciplina, mapConjuntoDados, legendaPeriodoLetivos);
