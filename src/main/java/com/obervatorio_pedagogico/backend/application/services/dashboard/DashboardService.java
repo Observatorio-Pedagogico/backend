@@ -34,6 +34,7 @@ public class DashboardService {
         disciplinas.stream().forEach(disciplina -> {
             criarConjuntoDadosSexo(disciplina, Sexo.FEMININO, mapConjuntoDados, legendaPeriodoLetivos);
             criarConjuntoDadosSexo(disciplina, Sexo.MASCULINO, mapConjuntoDados, legendaPeriodoLetivos);
+            criarConjuntoTotalDadosSexo(disciplina, mapConjuntoDados, legendaPeriodoLetivos);
         });
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
@@ -54,6 +55,29 @@ public class DashboardService {
         } else {
             List<Integer> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSexo(sexo);
+            int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
+            if (index > conjuto.size() - 1) {
+                conjuto.add(quantidadeAlunos);
+            } else {
+                Integer valor = conjuto.get(index);
+                valor += quantidadeAlunos;
+                conjuto.set(index, valor);
+            }
+        }
+    }
+
+    private void criarConjuntoTotalDadosSexo(Disciplina disciplina, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+        legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
+        ConjuntoDados conjuntoDados = mapConjuntoDados.get("TOTAL");
+        if (Objects.isNull(conjuntoDados)) {
+            conjuntoDados = new ConjuntoDados();
+            conjuntoDados.setLegenda("TOTAL");
+            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunos());
+
+            mapConjuntoDados.put("TOTAL", conjuntoDados);
+        } else {
+            List<Integer> conjuto = conjuntoDados.getDados();
+            Integer quantidadeAlunos = disciplina.getQuantidadeAlunos();
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
                 conjuto.add(quantidadeAlunos);

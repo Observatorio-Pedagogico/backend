@@ -137,4 +137,8 @@ public class Disciplina implements Serializable {
     public Integer getQuantidadeAlunosPorSexo(Sexo sexo) {
         return (int) getAlunos().stream().filter(aluno -> aluno.getSexo().equals(sexo)).count();
     }
+
+    public Integer getQuantidadeAlunos() {
+        return (int) getAlunos().stream().count();
+    }
 }
