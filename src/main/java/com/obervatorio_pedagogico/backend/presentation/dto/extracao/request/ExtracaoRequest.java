@@ -28,8 +28,6 @@ public class ExtracaoRequest implements Serializable {
 
     private Status status;
 
-    private String periodoLetivo;
-
     private String emailRemetente;
 
     private LocalDateTime ultimaDataHoraAtualizacao;

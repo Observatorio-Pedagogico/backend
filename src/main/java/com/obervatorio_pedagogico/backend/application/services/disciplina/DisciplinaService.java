@@ -1,12 +1,16 @@
 package com.obervatorio_pedagogico.backend.application.services.disciplina;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
@@ -48,5 +52,19 @@ public class DisciplinaService {
         });
 
         disciplinaRepository.deleteById(disciplina.getId());
+    }
+
+    public List<String> buscarListaPeriodos() {
+        Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
+        List<Disciplina> disciplinas = this.disciplinaRepository.findAll(Sort.by(Sort.Direction.ASC, "periodoLetivo"));
+
+        if (disciplinas.isEmpty())
+            throw new NaoEncontradoException();
+
+        disciplinas.stream().forEach(disciplina -> {
+            legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
+        });
+
+        return new ArrayList<>(legendaPeriodoLetivos);
     }
 }
