@@ -41,7 +41,7 @@ public class DashboardController {
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }
 
-    @GetMapping("/situacao-disciplina")
+    @GetMapping("/situacao-aluno")
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardSituacaoAluno(DashboardSituacaoAlunoBuscaRequest dashboardSituacaoAlunoBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardSituacaoAlunoBuscaRequest).build();
         Dashboard dashboard = dashboardService.gerarDashboardSituacaoAlunos(predicate);
