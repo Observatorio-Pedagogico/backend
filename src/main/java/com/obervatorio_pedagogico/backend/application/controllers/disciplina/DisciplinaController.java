@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.application.controllers.disciplina;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -36,9 +37,9 @@ public class DisciplinaController {
     private PredicatesGenerator predicatesGenerator;
 
     @GetMapping("/resumido")
-    public ResponseEntity<Response<List<DisciplinaResumidoResponse>>> buscarDisciplinasResumido(Pageable pageable, DisciplinaBuscaRequest disciplinaBuscaRequest) {
+    public ResponseEntity<Response<Page<DisciplinaResumidoResponse>>> buscarDisciplinasResumido(Pageable pageable, DisciplinaBuscaRequest disciplinaBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(disciplinaBuscaRequest).build();
-        List<Disciplina> disciplinas = disciplinaService.buscar(pageable, predicate);
+        Page<Disciplina> disciplinas = disciplinaService.buscar(pageable, predicate);
 
         return responseService.ok(modelMapperService.convert(disciplinas, DisciplinaResumidoResponse.class));
     }

@@ -5,9 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -58,10 +57,8 @@ public class DisciplinaService {
         disciplinaRepository.deleteById(disciplina.getId());
     }
 
-    public List<Disciplina> buscar(Pageable pageable, Predicate predicate) {
-        Iterable<Disciplina> disciplinasIterable = disciplinaRepository.findAll(predicate, pageable);
-        List<Disciplina> disciplinas = StreamSupport.stream(disciplinasIterable.spliterator(), false)
-            .collect(Collectors.toList());
+    public Page<Disciplina> buscar(Pageable pageable, Predicate predicate) {
+        Page<Disciplina> disciplinas = disciplinaRepository.findAll(predicate, pageable);
 
         if (disciplinas.isEmpty())
             throw new NaoEncontradoException();
