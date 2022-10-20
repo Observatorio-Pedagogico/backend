@@ -338,6 +338,8 @@ public class ExtracaoService {
         disciplina.setCodigo(linhaArquivo.getCodigoDisciplina());
         disciplina.setNome(linhaArquivo.getNomeDisciplina());
         disciplina.setPeriodoLetivo(periodoLetivo);
+        disciplina.setCargaHoraria(linhaArquivo.getCargaHoraria());
+        disciplina.setPeriodoMatriz(linhaArquivo.getPeriodoMatriz());
         return disciplina;
     }
 

@@ -49,6 +49,9 @@ public class Disciplina implements Serializable {
     @Column(name = "nome")
     private String nome;
 
+    @Column(name = "cargaHoraria")
+    private Integer cargaHoraria;
+
     @Column(name = "periodo_matriz")
     private String periodoMatriz;
 

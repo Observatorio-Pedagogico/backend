@@ -14,6 +14,8 @@ public class DisciplinaResponse {
 
     private String codigo;
 
+    private Integer cargaHoraria;
+
     private String nome;
 
     private String periodoMatriz;
