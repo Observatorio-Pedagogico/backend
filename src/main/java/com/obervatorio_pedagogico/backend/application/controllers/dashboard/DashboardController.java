@@ -12,6 +12,7 @@ import com.obervatorio_pedagogico.backend.infrastructure.utils.buscaConstrutor.P
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.dashboard.request.busca.DashboardSexoBuscaRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.dashboard.request.busca.DashboardSituacaoAlunoBuscaRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.dashboard.response.DashboardResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -36,6 +37,14 @@ public class DashboardController {
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardSexo(DashboardSexoBuscaRequest dashboardSexoBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardSexoBuscaRequest).build();
         Dashboard dashboard = dashboardService.gerarDashboardSexo(predicate);
+
+        return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
+    }
+
+    @GetMapping("/situacao-disciplina")
+    public ResponseEntity<Response<DashboardResponse>> gerarDashboardSituacaoAluno(DashboardSituacaoAlunoBuscaRequest dashboardSituacaoAlunoBuscaRequest) {
+        BooleanExpression predicate = predicatesGenerator.add(dashboardSituacaoAlunoBuscaRequest).build();
+        Dashboard dashboard = dashboardService.gerarDashboardSituacaoAlunos(predicate);
 
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }

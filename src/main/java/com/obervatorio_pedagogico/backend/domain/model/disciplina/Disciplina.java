@@ -19,6 +19,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
@@ -139,6 +140,10 @@ public class Disciplina implements Serializable {
 
     public Integer getQuantidadeAlunosPorSexo(Sexo sexo) {
         return (int) getAlunos().stream().filter(aluno -> aluno.getSexo().equals(sexo)).count();
+    }
+
+    public Integer getQuantidadeAlunosPorSiatuacao(SituacaoDisciplina situacaoDisciplina) {
+        return (int) getFrequenciaSituacoes().stream().filter(situacao -> situacao.getSituacaoDisciplina().equals(situacaoDisciplina)).count();
     }
 
     public Integer getQuantidadeAlunos() {

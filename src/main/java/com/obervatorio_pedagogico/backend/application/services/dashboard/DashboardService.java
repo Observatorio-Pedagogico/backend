@@ -11,6 +11,7 @@ import java.util.Set;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.dashboard.ConjuntoDados;
 import com.obervatorio_pedagogico.backend.domain.model.dashboard.Dashboard;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
@@ -33,15 +34,59 @@ public class DashboardService {
         Iterable<Disciplina> disciplinas = this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo"));
 
         disciplinas.forEach(disciplina -> {
-            criarConjuntoDadosSexo(disciplina, Sexo.FEMININO, mapConjuntoDados, legendaPeriodoLetivos);
-            criarConjuntoDadosSexo(disciplina, Sexo.MASCULINO, mapConjuntoDados, legendaPeriodoLetivos);
-            criarConjuntoTotalDadosSexo(disciplina, mapConjuntoDados, legendaPeriodoLetivos);
+            for (Sexo sexo : Sexo.values()) {
+                criarConjuntoDadosSexo(disciplina, sexo, mapConjuntoDados, legendaPeriodoLetivos);
+            }
+            criarConjuntoTotalDados(disciplina, "TOTAL", mapConjuntoDados, legendaPeriodoLetivos);
         });
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
         dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
 
         return dashboard;
+    }
+
+    public Dashboard gerarDashboardSituacaoAlunos(Predicate predicate) {
+        Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
+        Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
+
+        Dashboard dashboard = new Dashboard();
+        Iterable<Disciplina> disciplinas = this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo"));
+
+        disciplinas.forEach(disciplina -> {
+            for (SituacaoDisciplina situacaoDisciplina : SituacaoDisciplina.values()) {
+                criarConjuntoDadosSiatuacaoAluno(disciplina, situacaoDisciplina, mapConjuntoDados, legendaPeriodoLetivos);
+            } 
+            criarConjuntoTotalDados(disciplina, "MATRICULADOS", mapConjuntoDados, legendaPeriodoLetivos);
+        });
+
+        dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
+        dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
+
+        return dashboard;
+    }
+
+    private void criarConjuntoDadosSiatuacaoAluno(Disciplina disciplina, SituacaoDisciplina situacaoDisciplina, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+        legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
+        ConjuntoDados conjuntoDados = mapConjuntoDados.get(situacaoDisciplina.name());
+        if (Objects.isNull(conjuntoDados)) {
+            conjuntoDados = new ConjuntoDados();
+            conjuntoDados.setLegenda(situacaoDisciplina.name());
+            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina));
+
+            mapConjuntoDados.put(situacaoDisciplina.name(), conjuntoDados);
+        } else {
+            List<Integer> conjuto = conjuntoDados.getDados();
+            Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina);
+            int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
+            if (index > conjuto.size() - 1) {
+                conjuto.add(quantidadeAlunos);
+            } else {
+                Integer valor = conjuto.get(index);
+                valor += quantidadeAlunos;
+                conjuto.set(index, valor);
+            }
+        }
     }
 
     private void criarConjuntoDadosSexo(Disciplina disciplina, Sexo sexo, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
@@ -67,15 +112,15 @@ public class DashboardService {
         }
     }
 
-    private void criarConjuntoTotalDadosSexo(Disciplina disciplina, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+    private void criarConjuntoTotalDados(Disciplina disciplina, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
         legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
-        ConjuntoDados conjuntoDados = mapConjuntoDados.get("TOTAL");
+        ConjuntoDados conjuntoDados = mapConjuntoDados.get(label);
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
-            conjuntoDados.setLegenda("TOTAL");
+            conjuntoDados.setLegenda(label);
             conjuntoDados.getDados().add(disciplina.getQuantidadeAlunos());
 
-            mapConjuntoDados.put("TOTAL", conjuntoDados);
+            mapConjuntoDados.put(label, conjuntoDados);
         } else {
             List<Integer> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunos();
