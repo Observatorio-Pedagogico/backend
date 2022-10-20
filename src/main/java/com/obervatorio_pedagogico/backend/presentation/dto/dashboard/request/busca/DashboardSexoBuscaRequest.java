@@ -19,6 +19,9 @@ import lombok.Setter;
 @SearchEntity(Disciplina.class)
 public class DashboardSexoBuscaRequest {
 
+    @SearchParam(property = "id",  operation = Operation.EQUALS)
+    private List<Long> id;
+
     @SearchParam(property = "periodoLetivo",  operation = Operation.EQUALS)
     private List<String> periodoLetivo;
 }
