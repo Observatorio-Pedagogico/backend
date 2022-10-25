@@ -28,6 +28,86 @@ public class DashboardService {
     private final DisciplinaRepository disciplinaRepository;
     private final DashboardRepository dashboardRepository;
 
+    public Dashboard gerarDashboardNotas(Predicate predicate, Boolean ignorarReprovadosPorFalta) {
+        Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
+        Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
+
+        Dashboard dashboard = new Dashboard();
+        Iterable<Disciplina> disciplinas = this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo"));
+
+        gerarLegendarPorDisciplina(disciplinas, legendaPeriodoLetivos);
+
+        for (String periodoLetivo : legendaPeriodoLetivos) {
+            if (ignorarReprovadosPorFalta) {
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodoIgnorandoReprovadoPorFalta("NOTA", 1, periodoLetivo),
+                    periodoLetivo, "AVALIAÇÃO 1",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodoIgnorandoReprovadoPorFalta("NOTA", 2, periodoLetivo),
+                    periodoLetivo, "AVALIAÇÃO 2",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodoIgnorandoReprovadoPorFalta("NOTA", 3, periodoLetivo),
+                    periodoLetivo, "AVALIAÇÃO 3",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoPeriodoIgnorandoReprovadoPorFalta("MEDIA", periodoLetivo),
+                    periodoLetivo, "MÉDIA",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoPeriodoIgnorandoReprovadoPorFalta("FINAL", periodoLetivo),
+                    periodoLetivo, "FINAL",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+            } else {
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodo("NOTA", 1, periodoLetivo),
+                    periodoLetivo, "AVALIAÇÃO 1",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodo("NOTA", 2, periodoLetivo),
+                    periodoLetivo, "AVALIAÇÃO 2",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodo("NOTA", 3, periodoLetivo),
+                    periodoLetivo, "AVALIAÇÃO 3",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoPeriodo("MEDIA", periodoLetivo),
+                    periodoLetivo, "MÉDIA",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+                criarConjuntoDadosCalculandoMediaDoValor(
+                    dashboardRepository.obterMediaDeNotaPorTipoPeriodo("FINAL", periodoLetivo),
+                    periodoLetivo, "FINAL",
+                    mapConjuntoDados,
+                    legendaPeriodoLetivos
+                );
+            }
+        }
+
+        dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
+        dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
+        return dashboard;
+    }
+
     public Dashboard gerarDashboardFrequenciaENotas(Predicate predicate, Boolean ignorarReprovadosPorFalta) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
@@ -42,12 +122,12 @@ public class DashboardService {
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeFrequenciaSituacaoPorPeriodo(periodoLetivo), periodoLetivo, "FREQUÊNCIA", mapConjuntoDados, legendaPeriodoLetivos);
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMenorNotaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MENOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMaiorNotaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MAIOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
-                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeNotaTipoMediaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MÉDIA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeNotaPorTipoPeriodoIgnorandoReprovadoPorFalta("MEDIA", periodoLetivo), periodoLetivo, "MÉDIA", mapConjuntoDados, legendaPeriodoLetivos);
             } else {
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeFrequenciaSituacaoPorPeriodo(periodoLetivo), periodoLetivo, "FREQUÊNCIA", mapConjuntoDados, legendaPeriodoLetivos);
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMenorNotaPorPeriodo(periodoLetivo), periodoLetivo, "MENOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMaiorNotaPorPeriodo(periodoLetivo), periodoLetivo, "MAIOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
-                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeNotaTipoMediaPorPeriodo(periodoLetivo), periodoLetivo, "MÉDIA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeNotaPorTipoPeriodo("MEDIA", periodoLetivo), periodoLetivo, "MÉDIA", mapConjuntoDados, legendaPeriodoLetivos);
             }
         }
 

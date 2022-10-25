@@ -40,6 +40,14 @@ public class DashboardController {
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }
 
+    @GetMapping("/nota")
+    public ResponseEntity<Response<DashboardResponse>> gerarDashboardNota(DashboardBuscaRequest dashboardBuscaRequest) {
+        BooleanExpression predicate = predicatesGenerator.add(dashboardBuscaRequest).build();
+        Dashboard dashboard = dashboardService.gerarDashboardNotas(predicate, dashboardBuscaRequest.getIgnorarReprovadosPorFalta());
+
+        return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
+    }
+
     @GetMapping("/sexo")
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardSexo(DashboardBuscaRequest dashboardBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardBuscaRequest).build();

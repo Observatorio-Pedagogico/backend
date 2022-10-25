@@ -12,14 +12,25 @@ public interface DashboardRepository extends JpaRepository<Disciplina, Long> {
     
     @Query(value = "select sum(nota.valor) / count(1) from t_nota nota " +
     "join t_disciplina disciplina on disciplina.id = nota.id_disciplina " +
-    "where nota.tipo = 'MEDIA' and disciplina.periodo_letivo = :periodo", nativeQuery = true)
-    public Float obterMediaDeNotaTipoMediaPorPeriodo(@Param("periodo") String periodo);
+    "join t_frequencia_situacao frequencia_situacao on frequencia_situacao.id_disciplina = disciplina.id " +
+    "where nota.tipo = :tipoNota and nota.ordem = :ordem and disciplina.periodo_letivo = :periodo and not frequencia_situacao.situacao_disciplina = 'REPROVADO_POR_FALTA'", nativeQuery = true)
+    public Float obterMediaDeNotaPorTipoOrdemPeriodo(@Param("tipoNota") String tipoNota, @Param("ordem") Integer ordem, @Param("periodo") String periodo);
+
+    @Query(value = "select sum(nota.valor) / count(1) from t_nota nota " +
+    "join t_disciplina disciplina on disciplina.id = nota.id_disciplina " +
+    "where nota.tipo = :tipoNota and nota.ordem = :ordem and disciplina.periodo_letivo = :periodo", nativeQuery = true)
+    public Float obterMediaDeNotaPorTipoOrdemPeriodoIgnorandoReprovadoPorFalta(@Param("tipoNota") String tipoNota, @Param("ordem") Integer ordem, @Param("periodo") String periodo);
+
+    @Query(value = "select sum(nota.valor) / count(1) from t_nota nota " +
+    "join t_disciplina disciplina on disciplina.id = nota.id_disciplina " +
+    "where nota.tipo = :tipoNota and disciplina.periodo_letivo = :periodo", nativeQuery = true)
+    public Float obterMediaDeNotaPorTipoPeriodo(@Param("tipoNota") String tipoNota, @Param("periodo") String periodo);
 
     @Query(value = "select sum(nota.valor) / count(1) from t_nota nota " +
     "join t_disciplina disciplina on disciplina.id = nota.id_disciplina " +
     "join t_frequencia_situacao frequencia_situacao on frequencia_situacao.id_disciplina = disciplina.id " +
-    "where nota.tipo = 'MEDIA' and not frequencia_situacao.situacao_disciplina = 'REPROVADO_POR_FALTA' and disciplina.periodo_letivo = :periodo", nativeQuery = true)
-    public Float obterMediaDeNotaTipoMediaPorPeriodoIgnorandoReprovadoPorFalta(@Param("periodo") String periodo);
+    "where nota.tipo = :tipoNota and not frequencia_situacao.situacao_disciplina = 'REPROVADO_POR_FALTA' and disciplina.periodo_letivo = :periodo", nativeQuery = true)
+    public Float obterMediaDeNotaPorTipoPeriodoIgnorandoReprovadoPorFalta(@Param("tipoNota") String tipoNota, @Param("periodo") String periodo);
     
     @Query(value = "select sum(frequencia_situacao.frequencia) / count(1) from t_frequencia_situacao frequencia_situacao " +
     "join t_disciplina disciplina on disciplina.id = frequencia_situacao.id_disciplina " +
