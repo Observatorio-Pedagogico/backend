@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.dashboard.response;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import lombok.AllArgsConstructor;
@@ -14,5 +15,5 @@ import lombok.Setter;
 public class ConjuntoDadosResponse {
     private String legenda;
     
-    private List<Float> dados;
+    private List<BigDecimal> dados;
 }

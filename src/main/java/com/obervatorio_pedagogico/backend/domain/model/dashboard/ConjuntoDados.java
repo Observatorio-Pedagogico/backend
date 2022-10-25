@@ -1,5 +1,6 @@
 package com.obervatorio_pedagogico.backend.domain.model.dashboard;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,9 +11,9 @@ import lombok.Setter;
 @Setter
 public class ConjuntoDados {
     private String legenda;
-    private List<Float> dados;
+    private List<BigDecimal> dados;
 
-    public ConjuntoDados(String legenda, List<Float> dados) {
+    public ConjuntoDados(String legenda, List<BigDecimal> dados) {
         this.legenda = legenda;
         this.dados = dados;
     }

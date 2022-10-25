@@ -1,5 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.services.dashboard;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -136,12 +138,6 @@ public class DashboardService {
         return dashboard;
     }
 
-    public void gerarLegendarPorDisciplina(Iterable<Disciplina> disciplinas, Set<String> legendas) {
-        for (Disciplina disciplina : disciplinas) {
-            legendas.add(disciplina.getPeriodoLetivo());
-        }
-    }
-
     public Dashboard gerarDashboardSexo(Predicate predicate) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
@@ -187,11 +183,11 @@ public class DashboardService {
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(label);
-            conjuntoDados.getDados().add(valor);
+            conjuntoDados.getDados().add(new BigDecimal(valor).setScale(2, RoundingMode.HALF_UP));
 
             mapConjuntoDados.put(label, conjuntoDados);
         } else {
-            conjuntoDados.getDados().add(valor);
+            conjuntoDados.getDados().add(new BigDecimal(valor).setScale(2, RoundingMode.HALF_UP));
         }
     }
 
@@ -201,18 +197,18 @@ public class DashboardService {
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(situacaoDisciplina.name());
-            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina).floatValue());
+            conjuntoDados.getDados().add(new BigDecimal(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina).floatValue()).setScale(2, RoundingMode.HALF_UP));
 
             mapConjuntoDados.put(situacaoDisciplina.name(), conjuntoDados);
         } else {
-            List<Float> conjuto = conjuntoDados.getDados();
+            List<BigDecimal> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina);
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
-                conjuto.add(quantidadeAlunos.floatValue());
+                conjuto.add(new BigDecimal(quantidadeAlunos.floatValue()).setScale(2, RoundingMode.HALF_UP));
             } else {
-                Float valor = conjuto.get(index);
-                valor += quantidadeAlunos;
+                BigDecimal valor = conjuto.get(index);
+                valor = valor.add(new BigDecimal(quantidadeAlunos));
                 conjuto.set(index, valor);
             }
         }
@@ -224,18 +220,18 @@ public class DashboardService {
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(sexo.name());
-            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSexo(sexo).floatValue());
+            conjuntoDados.getDados().add(new BigDecimal(disciplina.getQuantidadeAlunosPorSexo(sexo).floatValue()).setScale(2, RoundingMode.HALF_UP));
 
             mapConjuntoDados.put(sexo.name(), conjuntoDados);
         } else {
-            List<Float> conjuto = conjuntoDados.getDados();
+            List<BigDecimal> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSexo(sexo);
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
-                conjuto.add(quantidadeAlunos.floatValue());
+                conjuto.add(new BigDecimal(quantidadeAlunos.floatValue()).setScale(2, RoundingMode.HALF_UP));
             } else {
-                Float valor = conjuto.get(index);
-                valor += quantidadeAlunos;
+                BigDecimal valor = conjuto.get(index);
+                valor = valor.add(new BigDecimal(quantidadeAlunos));
                 conjuto.set(index, valor);
             }
         }
@@ -247,20 +243,26 @@ public class DashboardService {
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(label);
-            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunos().floatValue());
+            conjuntoDados.getDados().add(new BigDecimal(disciplina.getQuantidadeAlunos().floatValue()).setScale(2, RoundingMode.HALF_UP));
 
             mapConjuntoDados.put(label, conjuntoDados);
         } else {
-            List<Float> conjuto = conjuntoDados.getDados();
+            List<BigDecimal> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunos();
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
-                conjuto.add(quantidadeAlunos.floatValue());
+                conjuto.add(new BigDecimal(quantidadeAlunos.floatValue()).setScale(2, RoundingMode.HALF_UP));
             } else {
-                Float valor = conjuto.get(index);
-                valor += quantidadeAlunos;
+                BigDecimal valor = conjuto.get(index);
+                valor = valor.add(new BigDecimal(quantidadeAlunos));
                 conjuto.set(index, valor);
             }
+        }
+    }
+
+    private void gerarLegendarPorDisciplina(Iterable<Disciplina> disciplinas, Set<String> legendas) {
+        for (Disciplina disciplina : disciplinas) {
+            legendas.add(disciplina.getPeriodoLetivo());
         }
     }
 
