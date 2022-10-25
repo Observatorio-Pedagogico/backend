@@ -6,6 +6,7 @@ spring:
     database: POSTGRESQL
     properties:
       hibernate:
+        show_sql: false
         enable_lazy_load_no_trans: true
         event:
           merge:
@@ -34,14 +35,3 @@ spring:
     addresses: localhost:5672
     username: user
     password: user
-
-  security:
-    oauth2:
-      client:
-        registration:
-          google:
-            client-id: 774366700960-7o452sfqtr8d9a2kqq4mokio0c01ahhp.apps.googleusercontent.com
-            client-secret: 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
-            scope:
-            - email
-            - profile

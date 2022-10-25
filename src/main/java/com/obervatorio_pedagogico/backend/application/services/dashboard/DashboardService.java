@@ -16,6 +16,7 @@ import com.obervatorio_pedagogico.backend.domain.model.dashboard.ConjuntoDados;
 import com.obervatorio_pedagogico.backend.domain.model.dashboard.Dashboard;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
+import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.dashboard.DashboardRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
 import com.querydsl.core.types.Predicate;
 
@@ -25,6 +26,41 @@ import lombok.AllArgsConstructor;
 @Service
 public class DashboardService {
     private final DisciplinaRepository disciplinaRepository;
+    private final DashboardRepository dashboardRepository;
+
+    public Dashboard gerarDashboardFrequenciaENotas(Predicate predicate, Boolean ignorarReprovadosPorFalta) {
+        Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
+        Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
+
+        Dashboard dashboard = new Dashboard();
+        Iterable<Disciplina> disciplinas = this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo"));
+
+        gerarLegendarPorDisciplina(disciplinas, legendaPeriodoLetivos);
+
+        for (String periodoLetivo : legendaPeriodoLetivos) {
+            if (ignorarReprovadosPorFalta) {
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeFrequenciaSituacaoPorPeriodo(periodoLetivo), periodoLetivo, "FREQUÊNCIA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMenorNotaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MENOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMaiorNotaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MAIOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeNotaTipoMediaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MÉDIA", mapConjuntoDados, legendaPeriodoLetivos);
+            } else {
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeFrequenciaSituacaoPorPeriodo(periodoLetivo), periodoLetivo, "FREQUÊNCIA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMenorNotaPorPeriodo(periodoLetivo), periodoLetivo, "MENOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMaiorNotaPorPeriodo(periodoLetivo), periodoLetivo, "MAIOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
+                criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeNotaTipoMediaPorPeriodo(periodoLetivo), periodoLetivo, "MÉDIA", mapConjuntoDados, legendaPeriodoLetivos);
+            }
+        }
+
+        dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
+        dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
+        return dashboard;
+    }
+
+    public void gerarLegendarPorDisciplina(Iterable<Disciplina> disciplinas, Set<String> legendas) {
+        for (Disciplina disciplina : disciplinas) {
+            legendas.add(disciplina.getPeriodoLetivo());
+        }
+    }
 
     public Dashboard gerarDashboardSexo(Predicate predicate) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
@@ -66,23 +102,36 @@ public class DashboardService {
         return dashboard;
     }
 
+    private void criarConjuntoDadosCalculandoMediaDoValor(Float valor, String periodo, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+        ConjuntoDados conjuntoDados = mapConjuntoDados.get(label);
+        if (Objects.isNull(conjuntoDados)) {
+            conjuntoDados = new ConjuntoDados();
+            conjuntoDados.setLegenda(label);
+            conjuntoDados.getDados().add(valor);
+
+            mapConjuntoDados.put(label, conjuntoDados);
+        } else {
+            conjuntoDados.getDados().add(valor);
+        }
+    }
+
     private void criarConjuntoDadosSiatuacaoAluno(Disciplina disciplina, SituacaoDisciplina situacaoDisciplina, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
         legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
         ConjuntoDados conjuntoDados = mapConjuntoDados.get(situacaoDisciplina.name());
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(situacaoDisciplina.name());
-            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina));
+            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina).floatValue());
 
             mapConjuntoDados.put(situacaoDisciplina.name(), conjuntoDados);
         } else {
-            List<Integer> conjuto = conjuntoDados.getDados();
+            List<Float> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina);
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
-                conjuto.add(quantidadeAlunos);
+                conjuto.add(quantidadeAlunos.floatValue());
             } else {
-                Integer valor = conjuto.get(index);
+                Float valor = conjuto.get(index);
                 valor += quantidadeAlunos;
                 conjuto.set(index, valor);
             }
@@ -95,17 +144,17 @@ public class DashboardService {
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(sexo.name());
-            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSexo(sexo));
+            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunosPorSexo(sexo).floatValue());
 
             mapConjuntoDados.put(sexo.name(), conjuntoDados);
         } else {
-            List<Integer> conjuto = conjuntoDados.getDados();
+            List<Float> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSexo(sexo);
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
-                conjuto.add(quantidadeAlunos);
+                conjuto.add(quantidadeAlunos.floatValue());
             } else {
-                Integer valor = conjuto.get(index);
+                Float valor = conjuto.get(index);
                 valor += quantidadeAlunos;
                 conjuto.set(index, valor);
             }
@@ -118,17 +167,17 @@ public class DashboardService {
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(label);
-            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunos());
+            conjuntoDados.getDados().add(disciplina.getQuantidadeAlunos().floatValue());
 
             mapConjuntoDados.put(label, conjuntoDados);
         } else {
-            List<Integer> conjuto = conjuntoDados.getDados();
+            List<Float> conjuto = conjuntoDados.getDados();
             Integer quantidadeAlunos = disciplina.getQuantidadeAlunos();
             int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
             if (index > conjuto.size() - 1) {
-                conjuto.add(quantidadeAlunos);
+                conjuto.add(quantidadeAlunos.floatValue());
             } else {
-                Integer valor = conjuto.get(index);
+                Float valor = conjuto.get(index);
                 valor += quantidadeAlunos;
                 conjuto.set(index, valor);
             }

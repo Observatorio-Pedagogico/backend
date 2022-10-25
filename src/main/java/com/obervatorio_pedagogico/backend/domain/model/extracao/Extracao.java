@@ -141,8 +141,12 @@ public class Extracao implements Serializable {
         return this.status.isProcessando();
     }
 
+    public boolean isErro() {
+        return this.status.isErro();
+    }
+
     public enum Status {
-        ATIVA, CANCELADA, PROCESSANDO;
+        ATIVA, CANCELADA, PROCESSANDO, ERRO;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -154,6 +158,10 @@ public class Extracao implements Serializable {
 
         public Boolean isProcessando() {
             return PROCESSANDO.equals(this);
+        }
+
+        public Boolean isErro() {
+            return ERRO.equals(this);
         }
     }
 }

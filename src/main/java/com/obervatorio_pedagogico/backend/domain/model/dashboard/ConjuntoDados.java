@@ -10,9 +10,9 @@ import lombok.Setter;
 @Setter
 public class ConjuntoDados {
     private String legenda;
-    private List<Integer> dados;
+    private List<Float> dados;
 
-    public ConjuntoDados(String legenda, List<Integer> dados) {
+    public ConjuntoDados(String legenda, List<Float> dados) {
         this.legenda = legenda;
         this.dados = dados;
     }

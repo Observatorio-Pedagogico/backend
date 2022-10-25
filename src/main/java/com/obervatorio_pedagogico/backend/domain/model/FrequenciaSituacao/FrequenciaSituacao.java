@@ -16,12 +16,14 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota;
+import com.obervatorio_pedagogico.backend.domain.model.disciplina.Nota.Tipo;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 
 import lombok.AllArgsConstructor;
@@ -46,10 +48,17 @@ public class FrequenciaSituacao implements Serializable {
     @Column(name = "frequencia")
     private Integer frequencia;
 
-    @OneToMany(
-        mappedBy = "aluno", 
-        cascade = CascadeType.ALL,
-        orphanRemoval = true
+    @ManyToMany(fetch = FetchType.LAZY,
+    cascade = {
+            CascadeType.PERSIST,
+            CascadeType.MERGE,
+            CascadeType.REFRESH,
+            CascadeType.DETACH
+    })
+    @JoinTable(
+            name = "t_frequenciaSituacao_notas",
+            joinColumns = @JoinColumn (name = "id_frequencia_situacao"),
+            inverseJoinColumns = @JoinColumn(name = "id_nota")
     )
     private List<Nota> notas = new ArrayList<>();
 
@@ -87,6 +96,30 @@ public class FrequenciaSituacao implements Serializable {
                 && notaFiltro.getTipo().equals(nota.getTipo())
                 && notaFiltro.getDisciplina().equals(nota.getDisciplina())
                 && notaFiltro.getDisciplina().getPeriodoLetivo().equals(nota.getDisciplina().getPeriodoLetivo())));
+    }
+
+    public Nota obterMedia() {
+        return getNotas().stream().filter(nota -> nota.getTipo().equals(Tipo.MEDIA)).findFirst().orElse(null);
+    }
+
+    public Nota obterMenorNota() {
+        Nota menorNota = null;
+
+        for (Nota nota : getNotas()) {
+            if (Objects.isNull(menorNota) || menorNota.getValor().longValue() > nota.getValor().longValue())
+                menorNota = nota;
+        }
+        return menorNota;
+    }
+
+    public Nota obterMaiorNota() {
+        Nota maiorNota = null;
+
+        for (Nota nota : getNotas()) {
+            if (Objects.isNull(maiorNota) || maiorNota.getValor().longValue() < nota.getValor().longValue())
+                maiorNota = nota;
+        }
+        return maiorNota;
     }
 
     public enum SituacaoDisciplina {

@@ -17,11 +17,13 @@ import lombok.Setter;
 @Getter
 @Setter
 @SearchEntity(Disciplina.class)
-public class DashboardSexoBuscaRequest {
+public class DashboardBuscaRequest {
 
     @SearchParam(property = "id",  operation = Operation.EQUALS)
     private List<Long> id;
 
     @SearchParam(property = "periodoLetivo",  operation = Operation.EQUALS)
     private List<String> periodoLetivo;
+
+    private Boolean ignorarReprovadosPorFalta = false;
 }

@@ -14,5 +14,5 @@ import lombok.Setter;
 public class ConjuntoDadosResponse {
     private String legenda;
     
-    private List<Integer> dados;
+    private List<Float> dados;
 }

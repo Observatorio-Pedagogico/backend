@@ -190,7 +190,12 @@ public class ExtracaoService {
             extracaoRequest.getArquivos().add(arquivo);
         }
 
-        processar(extracao, extracaoRequest.getArquivos());
+        try {
+            processar(extracao, extracaoRequest.getArquivos());
+        } catch (Exception e) {
+            extracao.setStatus(Status.ERRO);
+            extracaoRepository.save(extracao);
+        }
     }
 
     private void processar(Extracao extracao, List<Arquivo> arquivos) {
@@ -459,7 +464,13 @@ public class ExtracaoService {
             String ordem = notaIndividual.get(0).substring(1);
             if (!ordem.isEmpty())
                 nota.setOrdem(new Integer(ordem));
-            nota.setValor(new BigDecimal(notaIndividual.get(1)));
+            try {
+                nota.setValor(new BigDecimal(notaIndividual.get(1)));
+
+            } catch (NumberFormatException e) {
+                System.out.println();
+                throw e;
+            }
 
             notas.add(nota);
         }
