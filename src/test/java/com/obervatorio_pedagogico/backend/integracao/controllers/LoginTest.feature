@@ -38,11 +38,12 @@ Scenario: Login senha vazio
 
 Scenario: login de usuario com sucesso
     * def path = urlBase + loginPath
+    * def cadastra = call read('Cadastra.feature') { matricula: "201915020008",  email: "thauan.amorim@academico.ifpb.edu.br",  senha: "123456",  nome: "Thauan Amorim",  sexo: "MASCULINO", tipo: "COPED" }
     Given url path
     And header Content-Type = "application/json"
     And request { email: 'thauan.amorim@academico.ifpb.edu.br', senha: '123456' }
     When method POST
-    And eval if (responseStatus == 400) karate.call('Cadastra.feature')
+    And eval if (responseStatus == 400) cadastra
     And retry until responseStatus == 200
     * print response
     Then assert responseStatus == 200

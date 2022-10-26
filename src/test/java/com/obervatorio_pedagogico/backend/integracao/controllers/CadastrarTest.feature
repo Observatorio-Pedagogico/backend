@@ -4,6 +4,7 @@ Feature: testes de cadastro de usuario
 Background:
     * def urlBase = 'http://localhost:8080/observatorio-pedagogico/api'
     * def cadastrarPath = '/login/cadastrar'
+    * def esperaCadastroPath = '/espera-cadastro/coped/ativar/'
 
 Scenario: cadastra usuario matricula vazio
     * def path = urlBase + cadastrarPath
@@ -94,6 +95,16 @@ Scenario: cadastra um usuario tipo qualquer outra coisa
     When method POST
     * print response
     Then status 400
+
+Scenario: cadastra dois usuarios e depois ativa eles
+    * def acessToken = call read('Login.feature')
+    * def cadastra2 = call read('Cadastra.feature') { matricula: "201915020009",  email: "thauan.normal@academico.ifpb.edu.br",  senha: "123456",  nome: "Thauan normal",  sexo: "MASCULINO", tipo: "COPED" }
+    * def path = urlBase + esperaCadastroPath + 2
+    Given url path
+    And header Authorization = 'Bearer ' + acessToken.acessToken
+    When method POST
+    * print response
+    Then status 200
 
 Scenario: cadastra um usuario com sucesso
     * def path = urlBase + cadastrarPath
