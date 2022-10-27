@@ -1,4 +1,5 @@
 
+@ignore @report=false
 Feature: cadastra usuario para reusar
 
 Background:

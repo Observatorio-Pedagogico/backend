@@ -1,5 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.controllers.autenticacao;
 
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -44,7 +46,7 @@ public class AutenticationController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<Response<FuncionarioResponse>> cadastrar(@RequestBody CadastroUsuarioRequest cadastroUsuarioDto) {
+    public ResponseEntity<Response<FuncionarioResponse>> cadastrar(@RequestBody @Valid CadastroUsuarioRequest cadastroUsuarioDto) {
         Usuario usuario = autenticacaoService.cadastrar(cadastroUsuarioDto);
 
         FuncionarioResponse dto = modelMapperService.convert(usuario, FuncionarioResponse.class);

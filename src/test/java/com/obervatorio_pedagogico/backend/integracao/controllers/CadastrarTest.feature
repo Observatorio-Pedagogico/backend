@@ -19,7 +19,7 @@ Scenario: cadastra um usuario com matricula com texto
     * def path = urlBase + cadastrarPath
     Given url path
     And header Content-Type = "application/json"
-    And request { matricula: "Qualquer Texto", email: "thauan.amorim@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim", sexo: "MASCULINO", tipo: "COPED" }
+    And request { matricula: "", email: "thauan.amorim@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim", sexo: "MASCULINO", tipo: "COPED" }
     When method POST
     * print response
     Then status 400
@@ -96,21 +96,11 @@ Scenario: cadastra um usuario tipo qualquer outra coisa
     * print response
     Then status 400
 
-Scenario: cadastra dois usuarios e depois ativa eles
-    * def acessToken = call read('Login.feature')
-    * def cadastra2 = call read('Cadastra.feature') { matricula: "201915020009",  email: "thauan.normal@academico.ifpb.edu.br",  senha: "123456",  nome: "Thauan normal",  sexo: "MASCULINO", tipo: "COPED" }
-    * def path = urlBase + esperaCadastroPath + 2
-    Given url path
-    And header Authorization = 'Bearer ' + acessToken.acessToken
-    When method POST
-    * print response
-    Then status 200
-
 Scenario: cadastra um usuario com sucesso
     * def path = urlBase + cadastrarPath
     Given url path
     And header Content-Type = "application/json"
-    And request { matricula: "201915020008", email: "thauan.amorim@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim", sexo: "MASCULINO", tipo: "COPED" }
+    And request { matricula: "201915020008", email: "thauan.amorim.normal@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim normal", sexo: "MASCULINO", tipo: "COPED" }
     When method POST
     * print response
     Then status 200
