@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
@@ -107,6 +108,11 @@ public class DashboardService {
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
         dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
+
+        if (dashboard.getConjuntoDados().isEmpty()) {
+            throw new NaoEncontradoException();
+        }
+
         return dashboard;
     }
 
@@ -135,6 +141,11 @@ public class DashboardService {
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
         dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
+
+        if (dashboard.getConjuntoDados().isEmpty()) {
+            throw new NaoEncontradoException();
+        }
+
         return dashboard;
     }
 
@@ -155,6 +166,10 @@ public class DashboardService {
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
         dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
 
+        if (dashboard.getConjuntoDados().isEmpty()) {
+            throw new NaoEncontradoException();
+        }
+
         return dashboard;
     }
 
@@ -174,6 +189,10 @@ public class DashboardService {
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
         dashboard.setConjuntoDados(new ArrayList<>(mapConjuntoDados.values()));
+
+        if (dashboard.getConjuntoDados().isEmpty()) {
+            throw new NaoEncontradoException();
+        }
 
         return dashboard;
     }
