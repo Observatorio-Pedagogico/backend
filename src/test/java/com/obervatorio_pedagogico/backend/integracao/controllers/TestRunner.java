@@ -15,8 +15,4 @@ public class TestRunner {
         return Karate.run("LoginTest").relativeTo(getClass());
     }
 
-    // @Test
-    // Karate testParallel() {
-    //     return Karate.run("classpath:com/obervatorio_pedagogico/backend/integracao/controllers").relativeTo(getClass());
-    // }
 }
