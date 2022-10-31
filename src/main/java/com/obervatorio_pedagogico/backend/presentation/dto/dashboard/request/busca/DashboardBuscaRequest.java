@@ -25,5 +25,8 @@ public class DashboardBuscaRequest {
     @SearchParam(property = "periodoLetivo",  operation = Operation.EQUALS)
     private List<String> periodoLetivo;
 
+    @SearchParam(property = "codigo",  operation = Operation.EQUALS)
+    private List<String> codigo;
+
     private Boolean ignorarReprovadosPorFalta = false;
 }
