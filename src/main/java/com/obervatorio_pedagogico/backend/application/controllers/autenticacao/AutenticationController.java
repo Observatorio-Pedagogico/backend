@@ -18,7 +18,7 @@ import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.Cadastro
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.response.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.FuncionarioCopedResponse;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.FuncionarioResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.UsuarioResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.ProfessorResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 
@@ -44,10 +44,10 @@ public class AutenticationController {
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<Response<FuncionarioResponse>> cadastrar(@RequestBody CadastroUsuarioRequest cadastroUsuarioDto) {
+    public ResponseEntity<Response<UsuarioResponse>> cadastrar(@RequestBody CadastroUsuarioRequest cadastroUsuarioDto) {
         Usuario usuario = autenticacaoService.cadastrar(cadastroUsuarioDto);
 
-        FuncionarioResponse dto = modelMapperService.convert(usuario, FuncionarioResponse.class);
+        UsuarioResponse dto = modelMapperService.convert(usuario, UsuarioResponse.class);
 
         return responseService.ok(dto);
     }

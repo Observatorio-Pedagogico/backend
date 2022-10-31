@@ -5,5 +5,5 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class ProfessorResponse extends FuncionarioResponse {
+public class ProfessorResponse extends UsuarioResponse {
 }

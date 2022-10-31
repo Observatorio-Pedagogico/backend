@@ -464,13 +464,7 @@ public class ExtracaoService {
             String ordem = notaIndividual.get(0).substring(1);
             if (!ordem.isEmpty())
                 nota.setOrdem(new Integer(ordem));
-            try {
-                nota.setValor(new BigDecimal(notaIndividual.get(1)));
-
-            } catch (NumberFormatException e) {
-                System.out.println();
-                throw e;
-            }
+            nota.setValor(new BigDecimal(notaIndividual.get(1)));
 
             notas.add(nota);
         }

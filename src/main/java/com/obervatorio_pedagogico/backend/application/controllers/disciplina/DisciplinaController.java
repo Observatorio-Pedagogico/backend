@@ -7,6 +7,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,6 +17,7 @@ import com.obervatorio_pedagogico.backend.infrastructure.utils.buscaConstrutor.P
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.disciplina.request.DisciplinaBuscaRequest;
+import com.obervatorio_pedagogico.backend.presentation.dto.disciplina.response.DisciplinaResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.disciplina.response.DisciplinaResumidoResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 import com.querydsl.core.types.dsl.BooleanExpression;
@@ -44,9 +46,25 @@ public class DisciplinaController {
         return responseService.ok(modelMapperService.convert(disciplinas, DisciplinaResumidoResponse.class));
     }
 
+    @GetMapping
+    public ResponseEntity<Response<Page<DisciplinaResponse>>> buscarDisciplinas(Pageable pageable, DisciplinaBuscaRequest disciplinaBuscaRequest) {
+        BooleanExpression predicate = predicatesGenerator.add(disciplinaBuscaRequest).build();
+        Page<Disciplina> disciplinas = disciplinaService.buscar(pageable, predicate);
+
+        return responseService.ok(modelMapperService.convert(disciplinas, DisciplinaResponse.class));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Response<DisciplinaResponse>> buscarDisciplinasPorId(@PathVariable Long id) {
+        Disciplina disciplina = disciplinaService.buscarPorId(id);
+
+        return responseService.ok(modelMapperService.convert(disciplina, DisciplinaResponse.class));
+    }
+
     @GetMapping("/periodos")
-    public ResponseEntity<Response<List<String>>> buscarPeriodos() {
-        List<String> periodos = disciplinaService.buscarListaPeriodos();
+    public ResponseEntity<Response<List<String>>> buscarPeriodos(DisciplinaBuscaRequest disciplinaBuscaRequest) {
+        BooleanExpression predicate = predicatesGenerator.add(disciplinaBuscaRequest).build();
+        List<String> periodos = disciplinaService.buscarListaPeriodos(predicate);
 
         return responseService.ok(periodos);
     }

@@ -12,7 +12,7 @@ import lombok.Setter;
 @AllArgsConstructor
 @NoArgsConstructor
 public class EnvelopeFuncionarioResponse {
-    private FuncionarioResponse funcionario;
+    private UsuarioResponse funcionario;
 
     private TipoFuncionario tipoFuncionario;
 }

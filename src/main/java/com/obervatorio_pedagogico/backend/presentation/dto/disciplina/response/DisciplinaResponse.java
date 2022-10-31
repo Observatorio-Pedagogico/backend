@@ -1,5 +1,9 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.disciplina.response;
 
+import java.util.List;
+
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.AlunoResumidoResponse;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,4 +25,6 @@ public class DisciplinaResponse {
     private String periodoMatriz;
 
     private String periodoLetivo;
+
+    private List<AlunoResumidoResponse> alunos;
 }

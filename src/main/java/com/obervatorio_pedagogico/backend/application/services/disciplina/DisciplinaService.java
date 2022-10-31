@@ -5,6 +5,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -44,6 +46,11 @@ public class DisciplinaService {
         return disciplinaSalvaOp;
     }
 
+    public Disciplina buscarPorId(Long id) {
+        Disciplina disciplina = disciplinaRepository.findById(id).orElseThrow(() -> new NaoEncontradoException());
+        return disciplina;
+    }
+
     public void deleteDisciplina(Disciplina disciplina) {
         List<Aluno> disciplinaAlunosClone = new ArrayList<>(disciplina.getAlunos());
         disciplinaAlunosClone.stream().forEach(aluno -> {
@@ -66,10 +73,10 @@ public class DisciplinaService {
         return disciplinas;
     }
 
-    public List<String> buscarListaPeriodos() {
+    public List<String> buscarListaPeriodos(Predicate predicate) {
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
-        List<Disciplina> disciplinas = this.disciplinaRepository.findAll(Sort.by(Sort.Direction.ASC, "periodoLetivo"));
-
+        List<Disciplina> disciplinas = StreamSupport.stream(this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo")).spliterator(), false)
+                                            .collect(Collectors.toList());
         if (disciplinas.isEmpty())
             throw new NaoEncontradoException();
 

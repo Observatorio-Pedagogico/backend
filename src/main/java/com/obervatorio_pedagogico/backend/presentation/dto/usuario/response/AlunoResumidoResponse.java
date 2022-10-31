@@ -1,6 +1,6 @@
 package com.obervatorio_pedagogico.backend.presentation.dto.usuario.response;
 
-import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
+import java.math.BigDecimal;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,13 +11,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class FuncionarioResponse {
-
-    private String matricula;
-
-    private String email;
-
-    private String nome;
-
-    private Sexo sexo;
+public class AlunoResumidoResponse extends UsuarioResponse {
+    private BigDecimal cre;
 }
