@@ -4,6 +4,7 @@ Feature: testes de cadastro de usuario
 Background:
     * def urlBase = 'http://localhost:8080/observatorio-pedagogico/api'
     * def cadastrarPath = '/login/cadastrar'
+    * def esperaCadastroPath = '/espera-cadastro/coped/ativar/'
 
 Scenario: cadastra usuario matricula vazio
     * def path = urlBase + cadastrarPath
@@ -18,7 +19,7 @@ Scenario: cadastra um usuario com matricula com texto
     * def path = urlBase + cadastrarPath
     Given url path
     And header Content-Type = "application/json"
-    And request { matricula: "Qualquer Texto", email: "thauan.amorim@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim", sexo: "MASCULINO", tipo: "COPED" }
+    And request { matricula: "", email: "thauan.amorim@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim", sexo: "MASCULINO", tipo: "COPED" }
     When method POST
     * print response
     Then status 400
@@ -99,7 +100,7 @@ Scenario: cadastra um usuario com sucesso
     * def path = urlBase + cadastrarPath
     Given url path
     And header Content-Type = "application/json"
-    And request { matricula: "201915020008", email: "thauan.amorim@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim", sexo: "MASCULINO", tipo: "COPED" }
+    And request { matricula: "201915020008", email: "thauan.amorim.normal@academico.ifpb.edu.br", senha: "123456", nome: "Thauan Amorim normal", sexo: "MASCULINO", tipo: "COPED" }
     When method POST
     * print response
     Then status 200

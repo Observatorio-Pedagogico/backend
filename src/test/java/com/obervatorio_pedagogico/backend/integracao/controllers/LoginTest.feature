@@ -16,7 +16,7 @@ Scenario: Login email vazio
     Then assert responseStatus == 400
     * print response
 
-Scenario: Login email fora estituicao
+Scenario: Login email fora instituicao  
     * def path = urlBase + loginPath
     Given url path
     And header Content-Type = "application/json"
@@ -40,9 +40,9 @@ Scenario: login de usuario com sucesso
     * def path = urlBase + loginPath
     Given url path
     And header Content-Type = "application/json"
-    And request { email: 'thauan.amorim@academico.ifpb.edu.br', senha: '123456' }
+    And request { email: 'thauan.amorim.normal@academico.ifpb.edu.br', senha: '123456' }
     When method POST
-    And eval if (responseStatus == 400) karate.call('Cadastra.feature')
+    #And eval if (responseStatus == 400) karate.call('Cadastra.feature', { matricula: "201915020008",  email: "thauan.amorim@academico.ifpb.edu.br",  senha: "123456",  nome: "Thauan Amorim",  sexo: "MASCULINO", tipo: "COPED" })
     And retry until responseStatus == 200
     * print response
     Then assert responseStatus == 200

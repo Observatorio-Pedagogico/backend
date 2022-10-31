@@ -1,5 +1,7 @@
 package com.obervatorio_pedagogico.backend.application.controllers.autenticacao;
 
+import javax.validation.Valid;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
