@@ -35,7 +35,7 @@ public class AlunoController {
     private PredicatesGenerator predicatesGenerator;
 
     @GetMapping("/resumido")
-    public ResponseEntity<Response<Page<AlunoResumidoResponse>>> buscarDisciplinas(Pageable pageable, AlunoBuscaRequest alunoBuscaRequest) {
+    public ResponseEntity<Response<Page<AlunoResumidoResponse>>> buscarAlunos(Pageable pageable, AlunoBuscaRequest alunoBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(alunoBuscaRequest).build();
         Page<Aluno> alunos = alunoService.buscar(pageable, predicate);
 

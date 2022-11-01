@@ -157,11 +157,21 @@ public class Disciplina implements Serializable {
         }).count();
     }
 
+    public Integer getQuantidadeAlunosPorSexo(Sexo sexo) {
+        return getQuantidadeAlunosPorSexo(sexo, false);
+    }
+
     public Integer getQuantidadeAlunosPorSiatuacao(SituacaoDisciplina situacaoDisciplina) {
         return (int) getFrequenciaSituacoes().stream().filter(situacao -> situacao.getSituacaoDisciplina().equals(situacaoDisciplina)).count();
     }
 
+    public Integer getQuantidadeAlunos(Boolean ignorarAusencia) {
+        return (int) getAlunos().stream().filter(aluno -> !ignorarAusencia ||
+            (ignorarAusencia && !obterFrequenciaSituacaoPorIdAluno(aluno.getId()).isAusencia())
+        ).count();
+    }
+
     public Integer getQuantidadeAlunos() {
-        return (int) getAlunos().stream().count();
+        return getQuantidadeAlunos(false);
     }
 }

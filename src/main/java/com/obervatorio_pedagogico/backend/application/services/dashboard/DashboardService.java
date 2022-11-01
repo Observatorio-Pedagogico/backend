@@ -161,10 +161,14 @@ public class DashboardService {
                 if (ignorarAusencia) {
                     criarConjuntoDadosSexo(disciplina.getQuantidadeAlunosPorSexo(sexo, ignorarAusencia).floatValue(), disciplina.getPeriodoLetivo(), sexo.name(), mapConjuntoDados, legendaPeriodoLetivos);
                 } else {
-                    criarConjuntoDadosSexo(disciplina.getQuantidadeAlunosPorSexo(sexo, ignorarAusencia).floatValue(), disciplina.getPeriodoLetivo(), sexo.name(), mapConjuntoDados, legendaPeriodoLetivos);
+                    criarConjuntoDadosSexo(disciplina.getQuantidadeAlunosPorSexo(sexo).floatValue(), disciplina.getPeriodoLetivo(), sexo.name(), mapConjuntoDados, legendaPeriodoLetivos);
                 }
             }
-            criarConjuntoTotalDados(disciplina, "TOTAL", mapConjuntoDados, legendaPeriodoLetivos);
+            if (ignorarAusencia ) {
+                criarConjuntoTotalDados(disciplina.getQuantidadeAlunos(ignorarAusencia).floatValue(), disciplina.getPeriodoLetivo(), "TOTAL", mapConjuntoDados, legendaPeriodoLetivos);
+            } else {
+                criarConjuntoTotalDados(disciplina.getQuantidadeAlunos().floatValue(), disciplina.getPeriodoLetivo(), "TOTAL", mapConjuntoDados, legendaPeriodoLetivos);
+            }
         });
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
@@ -190,7 +194,11 @@ public class DashboardService {
                     criarConjuntoDadosSiatuacaoAluno(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina).floatValue(), disciplina.getPeriodoLetivo(), situacaoDisciplina.name(), mapConjuntoDados, legendaPeriodoLetivos);
                 }
             }
-            criarConjuntoTotalDados(disciplina, "MATRICULADOS", mapConjuntoDados, legendaPeriodoLetivos);
+            if (ignorarAusencia ) {
+                criarConjuntoTotalDados(disciplina.getQuantidadeAlunos(ignorarAusencia).floatValue(), disciplina.getPeriodoLetivo(), "MATRICULADOS", mapConjuntoDados, legendaPeriodoLetivos);
+            } else {
+                criarConjuntoTotalDados(disciplina.getQuantidadeAlunos().floatValue(), disciplina.getPeriodoLetivo(), "MATRICULADOS", mapConjuntoDados, legendaPeriodoLetivos);
+            }
         });
 
         dashboard.setLegendas(new ArrayList<>(legendaPeriodoLetivos));
@@ -262,25 +270,25 @@ public class DashboardService {
         }
     }
 
-    private void criarConjuntoTotalDados(Disciplina disciplina, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
-        legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
+    private void criarConjuntoTotalDados(Float valor, String periodo, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+        legendaPeriodoLetivos.add(periodo);
         ConjuntoDados conjuntoDados = mapConjuntoDados.get(label);
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(label);
-            conjuntoDados.getDados().add(new BigDecimal(disciplina.getQuantidadeAlunos().floatValue()).setScale(2, RoundingMode.HALF_UP));
+            conjuntoDados.getDados().add(new BigDecimal(valor).setScale(2, RoundingMode.HALF_UP));
 
             mapConjuntoDados.put(label, conjuntoDados);
         } else {
             List<BigDecimal> conjuto = conjuntoDados.getDados();
-            Integer quantidadeAlunos = disciplina.getQuantidadeAlunos();
-            int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
+            Integer quantidadeAlunos = valor.intValue();
+            int index = getIndexFromSet(legendaPeriodoLetivos, periodo);
             if (index > conjuto.size() - 1) {
                 conjuto.add(new BigDecimal(quantidadeAlunos.floatValue()).setScale(2, RoundingMode.HALF_UP));
             } else {
-                BigDecimal valor = conjuto.get(index);
-                valor = valor.add(new BigDecimal(quantidadeAlunos));
-                conjuto.set(index, valor);
+                BigDecimal valorIndex = conjuto.get(index);
+                valorIndex = valorIndex.add(new BigDecimal(quantidadeAlunos));
+                conjuto.set(index, valorIndex);
             }
         }
     }
