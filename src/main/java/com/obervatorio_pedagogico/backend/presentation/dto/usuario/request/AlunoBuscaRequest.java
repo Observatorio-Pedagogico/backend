@@ -19,7 +19,7 @@ import lombok.Setter;
 @SearchEntity(Aluno.class)
 public class AlunoBuscaRequest {
 
-    @SearchParam(property = "periodoLetivo",  operation = Operation.EQUALS)
+    @SearchParam(property = "disciplinas.periodoLetivo",  operation = Operation.EQUALS)
     private List<String> periodoLetivo;
 
     @SearchParam(property = "disciplinas.codigo",  operation = Operation.EQUALS)
