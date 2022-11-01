@@ -2,6 +2,7 @@ package com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -38,6 +39,8 @@ import lombok.Setter;
 @Entity
 @Table(name = "t_frequencia_situacao")
 public class FrequenciaSituacao implements Serializable {
+
+    private static final List<SituacaoDisciplina> situacoesAusencia = Arrays.asList(SituacaoDisciplina.CANCELADO, SituacaoDisciplina.REPROVADO_POR_FALTA, SituacaoDisciplina.TRANCADO);
 
     private static final long serialVersionUID = 1L;
     @Id
@@ -142,6 +145,10 @@ public class FrequenciaSituacao implements Serializable {
                 }
             }
             return null;
+        }
+
+        public Boolean isAusencia() {
+            return FrequenciaSituacao.situacoesAusencia.contains(this);
         }
     }
 }

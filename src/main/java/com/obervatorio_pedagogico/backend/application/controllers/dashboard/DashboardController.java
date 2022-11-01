@@ -35,7 +35,7 @@ public class DashboardController {
     @GetMapping("/frequencia-nota")
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardFrequenciaNota(DashboardBuscaRequest dashboardBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardBuscaRequest).build();
-        Dashboard dashboard = dashboardService.gerarDashboardFrequenciaENotas(predicate, dashboardBuscaRequest.getIgnorarReprovadosPorFalta());
+        Dashboard dashboard = dashboardService.gerarDashboardFrequenciaENotas(predicate, dashboardBuscaRequest.getIgnorarAusencia());
 
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }
@@ -43,7 +43,7 @@ public class DashboardController {
     @GetMapping("/nota")
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardNota(DashboardBuscaRequest dashboardBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardBuscaRequest).build();
-        Dashboard dashboard = dashboardService.gerarDashboardNotas(predicate, dashboardBuscaRequest.getIgnorarReprovadosPorFalta());
+        Dashboard dashboard = dashboardService.gerarDashboardNotas(predicate, dashboardBuscaRequest.getIgnorarAusencia());
 
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }
@@ -51,7 +51,7 @@ public class DashboardController {
     @GetMapping("/sexo")
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardSexo(DashboardBuscaRequest dashboardBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardBuscaRequest).build();
-        Dashboard dashboard = dashboardService.gerarDashboardSexo(predicate);
+        Dashboard dashboard = dashboardService.gerarDashboardSexo(predicate, dashboardBuscaRequest.getIgnorarAusencia());
 
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }
@@ -59,7 +59,7 @@ public class DashboardController {
     @GetMapping("/situacao-aluno")
     public ResponseEntity<Response<DashboardResponse>> gerarDashboardSituacaoAluno(DashboardBuscaRequest dashboardBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(dashboardBuscaRequest).build();
-        Dashboard dashboard = dashboardService.gerarDashboardSituacaoAlunos(predicate);
+        Dashboard dashboard = dashboardService.gerarDashboardSituacaoAlunos(predicate, dashboardBuscaRequest.getIgnorarAusencia());
 
         return responseService.ok(modelMapperService.convert(dashboard, DashboardResponse.class));
     }

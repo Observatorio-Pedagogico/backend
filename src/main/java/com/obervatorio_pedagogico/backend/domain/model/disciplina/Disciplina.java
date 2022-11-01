@@ -3,6 +3,7 @@ package com.obervatorio_pedagogico.backend.domain.model.disciplina;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -138,8 +139,22 @@ public class Disciplina implements Serializable {
         return this.getExtracoes().isEmpty();
     }
 
-    public Integer getQuantidadeAlunosPorSexo(Sexo sexo) {
-        return (int) getAlunos().stream().filter(aluno -> aluno.getSexo().equals(sexo)).count();
+    public SituacaoDisciplina obterFrequenciaSituacaoPorIdAluno(Long id) {
+        Optional<FrequenciaSituacao> frequenciaOpcional = getFrequenciaSituacoes().stream().filter(frequenciaSituacao -> frequenciaSituacao.getAluno().getId().equals(id)).findFirst();
+        
+        if (!frequenciaOpcional.isPresent()) return null;
+
+        return frequenciaOpcional.get().getSituacaoDisciplina();
+    }
+
+    public Integer getQuantidadeAlunosPorSexo(Sexo sexo, Boolean ignorarAusencia) {
+        return (int) getAlunos().stream().filter(aluno -> {
+            return (
+                !ignorarAusencia ||
+                (ignorarAusencia && !obterFrequenciaSituacaoPorIdAluno(aluno.getId()).isAusencia())
+            ) &&
+            aluno.getSexo().equals(sexo); 
+        }).count();
     }
 
     public Integer getQuantidadeAlunosPorSiatuacao(SituacaoDisciplina situacaoDisciplina) {

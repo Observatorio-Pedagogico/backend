@@ -10,10 +10,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.dashboard.ConjuntoDados;
 import com.obervatorio_pedagogico.backend.domain.model.dashboard.Dashboard;
@@ -31,7 +31,7 @@ public class DashboardService {
     private final DisciplinaRepository disciplinaRepository;
     private final DashboardRepository dashboardRepository;
 
-    public Dashboard gerarDashboardNotas(Predicate predicate, Boolean ignorarReprovadosPorFalta) {
+    public Dashboard gerarDashboardNotas(Predicate predicate, Boolean ignorarAusencia) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
 
@@ -41,7 +41,7 @@ public class DashboardService {
         gerarLegendarPorDisciplina(disciplinas, legendaPeriodoLetivos);
 
         for (String periodoLetivo : legendaPeriodoLetivos) {
-            if (ignorarReprovadosPorFalta) {
+            if (ignorarAusencia) {
                 criarConjuntoDadosCalculandoMediaDoValor(
                     dashboardRepository.obterMediaDeNotaPorTipoOrdemPeriodoIgnorandoReprovadoPorFalta("NOTA", 1, periodoLetivo),
                     periodoLetivo, "AVALIAÇÃO 1",
@@ -116,7 +116,7 @@ public class DashboardService {
         return dashboard;
     }
 
-    public Dashboard gerarDashboardFrequenciaENotas(Predicate predicate, Boolean ignorarReprovadosPorFalta) {
+    public Dashboard gerarDashboardFrequenciaENotas(Predicate predicate, Boolean ignorarAusencia) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
 
@@ -126,7 +126,7 @@ public class DashboardService {
         gerarLegendarPorDisciplina(disciplinas, legendaPeriodoLetivos);
 
         for (String periodoLetivo : legendaPeriodoLetivos) {
-            if (ignorarReprovadosPorFalta) {
+            if (ignorarAusencia) {
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMediaDeFrequenciaSituacaoPorPeriodo(periodoLetivo), periodoLetivo, "FREQUÊNCIA", mapConjuntoDados, legendaPeriodoLetivos);
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMenorNotaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MENOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
                 criarConjuntoDadosCalculandoMediaDoValor(dashboardRepository.obterMaiorNotaPorPeriodoIgnorandoReprovadoPorFalta(periodoLetivo), periodoLetivo, "MAIOR NOTA", mapConjuntoDados, legendaPeriodoLetivos);
@@ -149,7 +149,7 @@ public class DashboardService {
         return dashboard;
     }
 
-    public Dashboard gerarDashboardSexo(Predicate predicate) {
+    public Dashboard gerarDashboardSexo(Predicate predicate, Boolean ignorarAusencia) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
 
@@ -158,7 +158,11 @@ public class DashboardService {
 
         disciplinas.forEach(disciplina -> {
             for (Sexo sexo : Sexo.values()) {
-                criarConjuntoDadosSexo(disciplina, sexo, mapConjuntoDados, legendaPeriodoLetivos);
+                if (ignorarAusencia) {
+                    criarConjuntoDadosSexo(disciplina.getQuantidadeAlunosPorSexo(sexo, ignorarAusencia).floatValue(), disciplina.getPeriodoLetivo(), sexo.name(), mapConjuntoDados, legendaPeriodoLetivos);
+                } else {
+                    criarConjuntoDadosSexo(disciplina.getQuantidadeAlunosPorSexo(sexo, ignorarAusencia).floatValue(), disciplina.getPeriodoLetivo(), sexo.name(), mapConjuntoDados, legendaPeriodoLetivos);
+                }
             }
             criarConjuntoTotalDados(disciplina, "TOTAL", mapConjuntoDados, legendaPeriodoLetivos);
         });
@@ -173,7 +177,7 @@ public class DashboardService {
         return dashboard;
     }
 
-    public Dashboard gerarDashboardSituacaoAlunos(Predicate predicate) {
+    public Dashboard gerarDashboardSituacaoAlunos(Predicate predicate, Boolean ignorarAusencia) {
         Map<String, ConjuntoDados> mapConjuntoDados = new LinkedHashMap<>();
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
 
@@ -182,8 +186,10 @@ public class DashboardService {
 
         disciplinas.forEach(disciplina -> {
             for (SituacaoDisciplina situacaoDisciplina : SituacaoDisciplina.values()) {
-                criarConjuntoDadosSiatuacaoAluno(disciplina, situacaoDisciplina, mapConjuntoDados, legendaPeriodoLetivos);
-            } 
+                if (!ignorarAusencia || (ignorarAusencia && !situacaoDisciplina.isAusencia())) {
+                    criarConjuntoDadosSiatuacaoAluno(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina).floatValue(), disciplina.getPeriodoLetivo(), situacaoDisciplina.name(), mapConjuntoDados, legendaPeriodoLetivos);
+                }
+            }
             criarConjuntoTotalDados(disciplina, "MATRICULADOS", mapConjuntoDados, legendaPeriodoLetivos);
         });
 
@@ -210,48 +216,48 @@ public class DashboardService {
         }
     }
 
-    private void criarConjuntoDadosSiatuacaoAluno(Disciplina disciplina, SituacaoDisciplina situacaoDisciplina, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
-        legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
-        ConjuntoDados conjuntoDados = mapConjuntoDados.get(situacaoDisciplina.name());
+    private void criarConjuntoDadosSiatuacaoAluno(Float valor, String periodo, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+        legendaPeriodoLetivos.add(periodo);
+        ConjuntoDados conjuntoDados = mapConjuntoDados.get(label);
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
-            conjuntoDados.setLegenda(situacaoDisciplina.name());
-            conjuntoDados.getDados().add(new BigDecimal(disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina).floatValue()).setScale(2, RoundingMode.HALF_UP));
+            conjuntoDados.setLegenda(label);
+            conjuntoDados.getDados().add(new BigDecimal(valor).setScale(2, RoundingMode.HALF_UP));
 
-            mapConjuntoDados.put(situacaoDisciplina.name(), conjuntoDados);
+            mapConjuntoDados.put(label, conjuntoDados);
         } else {
             List<BigDecimal> conjuto = conjuntoDados.getDados();
-            Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSiatuacao(situacaoDisciplina);
-            int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
+            Integer quantidadeAlunos = valor.intValue();
+            int index = getIndexFromSet(legendaPeriodoLetivos, periodo);
             if (index > conjuto.size() - 1) {
                 conjuto.add(new BigDecimal(quantidadeAlunos.floatValue()).setScale(2, RoundingMode.HALF_UP));
             } else {
-                BigDecimal valor = conjuto.get(index);
-                valor = valor.add(new BigDecimal(quantidadeAlunos));
-                conjuto.set(index, valor);
+                BigDecimal valorIndex = conjuto.get(index);
+                valorIndex = valorIndex.add(new BigDecimal(quantidadeAlunos));
+                conjuto.set(index, valorIndex);
             }
         }
     }
 
-    private void criarConjuntoDadosSexo(Disciplina disciplina, Sexo sexo, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
-        legendaPeriodoLetivos.add(disciplina.getPeriodoLetivo());
-        ConjuntoDados conjuntoDados = mapConjuntoDados.get(sexo.name());
+    private void criarConjuntoDadosSexo(Float valor, String periodo, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
+        legendaPeriodoLetivos.add(periodo);
+        ConjuntoDados conjuntoDados = mapConjuntoDados.get(label);
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
-            conjuntoDados.setLegenda(sexo.name());
-            conjuntoDados.getDados().add(new BigDecimal(disciplina.getQuantidadeAlunosPorSexo(sexo).floatValue()).setScale(2, RoundingMode.HALF_UP));
+            conjuntoDados.setLegenda(label);
+            conjuntoDados.getDados().add(new BigDecimal(valor).setScale(2, RoundingMode.HALF_UP));
 
-            mapConjuntoDados.put(sexo.name(), conjuntoDados);
+            mapConjuntoDados.put(label, conjuntoDados);
         } else {
             List<BigDecimal> conjuto = conjuntoDados.getDados();
-            Integer quantidadeAlunos = disciplina.getQuantidadeAlunosPorSexo(sexo);
-            int index = getIndexFromSet(legendaPeriodoLetivos, disciplina.getPeriodoLetivo());
+            Integer quantidadeAlunos = valor.intValue();
+            int index = getIndexFromSet(legendaPeriodoLetivos, periodo);
             if (index > conjuto.size() - 1) {
                 conjuto.add(new BigDecimal(quantidadeAlunos.floatValue()).setScale(2, RoundingMode.HALF_UP));
             } else {
-                BigDecimal valor = conjuto.get(index);
-                valor = valor.add(new BigDecimal(quantidadeAlunos));
-                conjuto.set(index, valor);
+                BigDecimal valorIndex = conjuto.get(index);
+                valorIndex = valorIndex.add(new BigDecimal(quantidadeAlunos));
+                conjuto.set(index, valorIndex);
             }
         }
     }

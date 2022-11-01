@@ -28,5 +28,5 @@ public class DashboardBuscaRequest {
     @SearchParam(property = "codigo",  operation = Operation.EQUALS)
     private List<String> codigo;
 
-    private Boolean ignorarReprovadosPorFalta = false;
+    private Boolean ignorarAusencia = false;
 }
