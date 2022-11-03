@@ -8,11 +8,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.usuario.AlunoRepository;
-import com.querydsl.core.types.Predicate;
 
 import lombok.AllArgsConstructor;
 
@@ -38,8 +36,13 @@ public class AlunoService {
         return alunoSalvoOp;
     }
 
-    public Page<Aluno> buscar(Pageable pageable, Predicate predicate) {
-        Page<Aluno> alunos = alunoRepository.findAll(predicate, pageable);
+    public Page<Aluno> buscar(Pageable pageable, List<String> codigo, List<String> periodoLetivo, Boolean ignorarAusencia) {
+        Page<Aluno> alunos = null;
+        if (ignorarAusencia) {
+            alunos = alunoRepository.findAlunoByParamsIgnorarAusencia(codigo, periodoLetivo, pageable);
+        } else {
+            alunos = alunoRepository.findAlunoByParams(codigo, periodoLetivo, pageable);
+        }
 
         if (alunos.isEmpty())
             throw new NaoEncontradoException();
