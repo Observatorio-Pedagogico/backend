@@ -22,7 +22,7 @@ public interface AlunoRepository extends JpaRepository<Aluno, Long>, QuerydslPre
     @Query(value = "select * from t_aluno aluno " +
     "join t_disciplina_alunos disciplinas_alunos on disciplinas_alunos.id_aluno = aluno.id " +
     "join t_disciplina disciplina on disciplina.id = disciplinas_alunos.id_disciplina " +
-    "where (:codigos is null or disciplina.codigo in :codigos) and (:periodos is null or disciplina.periodo_letivo in :periodos)", nativeQuery = true)
+    "where ((:codigos) is null or disciplina.codigo in (:codigos)) and ((:periodos) is null or disciplina.periodo_letivo in (:periodos))", nativeQuery = true)
     public Page<Aluno> findAlunoByParams(@Param("codigos") List<String> codigos,
                                          @Param("periodos") List<String> periodos,
                                          Pageable pageable);
@@ -31,7 +31,7 @@ public interface AlunoRepository extends JpaRepository<Aluno, Long>, QuerydslPre
     "join t_disciplina_alunos disciplinas_alunos on disciplinas_alunos.id_aluno = aluno.id " +
     "join t_disciplina disciplina on disciplina.id = disciplinas_alunos.id_disciplina " +
     "join t_frequencia_situacao frequencia_situacao on frequencia_situacao.id_disciplina = disciplina.id " +
-    "where (:codigos is null or disciplina.codigo in :codigos) and (:periodos is null or disciplina.periodo_letivo in :periodos) " +
+    "where ((:codigos) is null or disciplina.codigo in (:codigos)) and ((:periodos) is null or disciplina.periodo_letivo in (:periodos)) " +
     "and not frequencia_situacao.situacao_disciplina in ('REPROVADO_POR_FALTA', 'CANCELADO', 'TRANCADO')", nativeQuery = true)
     public Page<Aluno> findAlunoByParamsIgnorarAusencia(@Param("codigos") List<String> codigos,
                                          @Param("periodos") List<String> periodos,
