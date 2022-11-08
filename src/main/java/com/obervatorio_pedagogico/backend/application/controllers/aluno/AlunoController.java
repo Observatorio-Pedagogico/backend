@@ -1,26 +1,20 @@
 package com.obervatorio_pedagogico.backend.application.controllers.aluno;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.obervatorio_pedagogico.backend.application.services.usuario.AlunoService;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.httpResponse.ResponseService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.AlunoResumidoResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
-
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/observatorio-pedagogico/api/aluno")
@@ -47,5 +41,12 @@ public class AlunoController {
         Page<Aluno> alunos = alunoService.buscar(pageable, codigo, periodoLetivo, ignorarAusencia);
 
         return responseService.ok(modelMapperService.convert(alunos, AlunoResumidoResponse.class));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Response<AlunoResumidoResponse>> buscarAlunoPorId(@PathVariable Long id) {
+        Aluno aluno = alunoService.buscarPorId(id);
+
+        return responseService.ok(modelMapperService.convert(aluno, AlunoResumidoResponse.class));
     }
 }
