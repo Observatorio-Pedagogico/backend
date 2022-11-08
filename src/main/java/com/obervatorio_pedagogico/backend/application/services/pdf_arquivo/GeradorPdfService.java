@@ -16,6 +16,7 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Image;
+import com.itextpdf.text.PageSize;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.pdf.PdfWriter;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.base64.Base64Service;
@@ -34,7 +35,8 @@ public class GeradorPdfService {
     public PdfArquivoResponse gerarPdf(PdfArquivo pdfArquivo) throws FileNotFoundException, DocumentException, JsonProcessingException {
         Document document = new Document();
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        PdfWriter.getInstance(document, byteArrayOutputStream);
+        PdfWriter writer = PdfWriter.getInstance(document, byteArrayOutputStream);
+        writer.setStrictImageSequence(true);
         document.open();
 
         pdfArquivo.getSubPartes().stream().forEach(subParte -> {
@@ -63,32 +65,38 @@ public class GeradorPdfService {
     }
 
     private void adicionarTexto(PdfArquivoSubParte arquivoSubParte, Document document) throws DocumentException {
-        adicionarTitulo(arquivoSubParte.getTituloConteudo(), document);
+        Paragraph paragraph = new Paragraph();
+        Font font = FontFactory.getFont(FontFactory.HELVETICA, 14, BaseColor.BLACK);
+        paragraph.setFont(font);
 
-        Font font = FontFactory.getFont(FontFactory.TIMES, 16, BaseColor.BLACK);
-        Chunk chunk = new Chunk(arquivoSubParte.getConteudo() + "\n\n", font);
-        document.add(new Paragraph(chunk));
+        adicionarTitulo(arquivoSubParte.getTituloConteudo(), document);
+        paragraph.add(arquivoSubParte.getConteudo() + "\n");
+
+        document.add(paragraph);
     }
     
     private void adicionarImagem(PdfArquivoSubParte arquivoSubParte, Document document) throws DocumentException, MalformedURLException, IOException {
+        Paragraph paragraph = new Paragraph(); 
         adicionarTitulo(arquivoSubParte.getTituloConteudo(), document);
 
         byte[] bytes = base64Service.decode(arquivoSubParte.getConteudo().split(",")[1]);
-
         Image image = Image.getInstance(bytes);
 
-        document.add(image);
-        Chunk chunk = new Chunk("\n");
-        document.add(new Paragraph(chunk));
+        image.scaleToFit(PageSize.A4.getWidth() * 0.90f, PageSize.A4.getHeight() * 0.90f);
+        image.setAlignment(Image.MIDDLE);
+        
+        paragraph.add(image);
+        document.add(paragraph);
     }
 
     private void adicionarTitulo(String titulo, Document document) throws DocumentException {
         if (Objects.isNull(titulo)) return;
 
-        Font font = FontFactory.getFont(FontFactory.COURIER_BOLD, 25, BaseColor.BLACK);
-        font.setStyle("BOLD");
-        Chunk chunk = new Chunk(titulo + "\n", font);
-        document.add(new Paragraph(chunk));
+        Font font = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
+
+        Chunk chunk = new Chunk("\n\n" + titulo + "\n", font);
+
+        document.add(chunk);
     }
 
     private void adicionarTitulo(PdfArquivoSubParte arquivoSubParte, Document document) throws DocumentException {
