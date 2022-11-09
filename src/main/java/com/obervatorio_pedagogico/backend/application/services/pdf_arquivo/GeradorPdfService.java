@@ -10,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.itextpdf.text.BaseColor;
-import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
 import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Font;
@@ -92,11 +91,13 @@ public class GeradorPdfService {
     private void adicionarTitulo(String titulo, Document document) throws DocumentException {
         if (Objects.isNull(titulo)) return;
 
+        Paragraph paragraph = new Paragraph(); 
         Font font = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 18, BaseColor.BLACK);
 
-        Chunk chunk = new Chunk("\n\n" + titulo + "\n", font);
-
-        document.add(chunk);
+        paragraph.setFont(font);
+        paragraph.add("\n\n" + titulo + "\n");
+        
+        document.add(paragraph);
     }
 
     private void adicionarTitulo(PdfArquivoSubParte arquivoSubParte, Document document) throws DocumentException {
