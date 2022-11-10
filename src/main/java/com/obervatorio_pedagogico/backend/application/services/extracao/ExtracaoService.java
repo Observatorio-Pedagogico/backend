@@ -265,7 +265,7 @@ public class ExtracaoService {
 
     private void cadastrarExtracaoDisciplina(Extracao extracao, ArquivoDisciplina arquivoDisciplina, ExtracaoThread extracaoThread) {
         if (Objects.isNull(arquivoDisciplina)) return;
-
+        System.out.println("----Comecou o cadastro da extracao disciplina----");
         Aluno aluno = null;
         Integer threadQuantidadeLinhas = extracaoThread.getLinhaAtual();
 
@@ -285,7 +285,7 @@ public class ExtracaoService {
                     continue;
                 }
                 aluno = findAluno(linhaArquivo, extracao);
-                System.out.println(aluno.getNome());
+                //System.out.println(aluno.getNome());
             }
             if (Objects.nonNull(aluno)) {
                 disciplina.addAluno(aluno);
@@ -299,7 +299,7 @@ public class ExtracaoService {
 
     private void cadastrarExtracaoAluno(Extracao extracao, ArquivoAluno arquivoAluno, ExtracaoThread extracaoThread) {
         if (Objects.isNull(arquivoAluno)) return;
-
+        System.out.println("----Comecou o cadastro da extracao aluno----");
         Aluno aluno = null;
         Integer threadQuantidadeLinhas = extracaoThread.getLinhaAtual();
 
@@ -319,7 +319,7 @@ public class ExtracaoService {
                     continue;
                 }
                 aluno = findAluno(linhaArquivo, extracao);
-                System.out.println(aluno.getNome());
+                //System.out.println(aluno.getNome());
             }
             if (Objects.nonNull(aluno)) {
                 disciplina.addAluno(aluno);

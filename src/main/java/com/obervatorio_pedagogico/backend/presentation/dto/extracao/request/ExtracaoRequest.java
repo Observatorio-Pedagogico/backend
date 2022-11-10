@@ -4,6 +4,11 @@ import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
+
 import org.springframework.web.multipart.MultipartFile;
 
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao.Status;
@@ -21,7 +26,10 @@ import lombok.Setter;
 public class ExtracaoRequest implements Serializable {
 
     private Long id;
-
+    
+    @Valid
+    @NotEmpty
+    @NotBlank
     private String titulo;
 
     private String descricao;

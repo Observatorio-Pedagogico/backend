@@ -39,14 +39,14 @@ public class AutenticationController {
     private ModelMapperService modelMapperService;
 
     @PostMapping
-    public ResponseEntity<Response<AuthResponse>> login(@RequestBody LoginRequest authRequest) {
+    public ResponseEntity<Response<AuthResponse>> login(@RequestBody @Valid LoginRequest authRequest) {
         AuthResponse authResponse = autenticacaoService.login(authRequest);
 
         return responseService.ok(authResponse);
     }
 
     @PostMapping("/cadastrar")
-    public ResponseEntity<Response<UsuarioResponse>> cadastrar(@RequestBody CadastroUsuarioRequest cadastroUsuarioDto) {
+    public ResponseEntity<Response<UsuarioResponse>> cadastrar(@RequestBody @Valid CadastroUsuarioRequest cadastroUsuarioDto) {
         Usuario usuario = autenticacaoService.cadastrar(cadastroUsuarioDto);
 
         UsuarioResponse dto = modelMapperService.convert(usuario, UsuarioResponse.class);
