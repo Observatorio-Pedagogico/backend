@@ -1,8 +1,9 @@
 package com.obervatorio_pedagogico.backend.application.services.usuario;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
@@ -37,8 +38,8 @@ public class ProfessorService {
         return ProfessorRepository.count();
     }
 
-    public List<Professor> listarEsperaCadastro() {
-        return ProfessorRepository.findProfessorWhereEsperaCadastroTrue();
+    public Page<Professor> listarEsperaCadastro(Pageable pageable) {
+        return ProfessorRepository.findProfessorWhereEsperaCadastroTrue(pageable);
     }
 
     public Professor ativarProfessor(Long id) {

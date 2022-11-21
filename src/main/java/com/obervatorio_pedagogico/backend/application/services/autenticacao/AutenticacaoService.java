@@ -2,9 +2,10 @@ package com.obervatorio_pedagogico.backend.application.services.autenticacao;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -27,8 +28,8 @@ import com.obervatorio_pedagogico.backend.infrastructure.security.auth.SharUtils
 import com.obervatorio_pedagogico.backend.infrastructure.security.service.SecurityService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest.Tipo;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.response.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 
@@ -132,12 +133,12 @@ public class AutenticacaoService {
         return professorService.ativarProfessor(id);
     }
 
-    public List<FuncionarioCoped> listarEsperaCadastroCoped() {
-        return funcionarioCopedService.listarEsperaCadastro();
+    public Page<FuncionarioCoped> listarEsperaCadastroCoped(Pageable pageable) {
+        return funcionarioCopedService.listarEsperaCadastro(pageable);
     }
 
-    public List<Professor> listarEsperaCadastroProfessor() {
-        return professorService.listarEsperaCadastro();
+    public Page<Professor> listarEsperaCadastroProfessor(Pageable pageable) {
+        return professorService.listarEsperaCadastro(pageable);
     }
 
     private void validarCadastro(CadastroUsuarioRequest cadastroUsuarioDto) {

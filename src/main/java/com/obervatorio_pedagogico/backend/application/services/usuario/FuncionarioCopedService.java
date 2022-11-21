@@ -1,8 +1,9 @@
 package com.obervatorio_pedagogico.backend.application.services.usuario;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
@@ -49,7 +50,7 @@ public class FuncionarioCopedService {
         return salvar(funcionarioCoped.get());
     }
 
-    public List<FuncionarioCoped> listarEsperaCadastro() {
-        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue();
+    public Page<FuncionarioCoped> listarEsperaCadastro(Pageable pageable) {
+        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue(pageable);
     }
 }
