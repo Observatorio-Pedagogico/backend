@@ -1,15 +1,5 @@
 package com.obervatorio_pedagogico.backend.application.controllers.autenticacao;
 
-import javax.validation.Valid;
-
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-
 import com.obervatorio_pedagogico.backend.application.services.autenticacao.AutenticacaoService;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.FuncionarioCoped;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
@@ -20,11 +10,15 @@ import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.Cadastro
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.response.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.FuncionarioCopedResponse;
-import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.UsuarioResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.ProfessorResponse;
+import com.obervatorio_pedagogico.backend.presentation.dto.usuario.response.UsuarioResponse;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
-
 import lombok.AllArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import javax.validation.Valid;
+import java.util.List;
 
 @RestController
 @RequestMapping("/observatorio-pedagogico/api/login")
@@ -72,19 +66,20 @@ public class AutenticationController {
         return responseService.ok(dto);
     }
 
-    // @GetMapping("/espera-cadastro/coped")
-    // public ResponseEntity<Response<List<FuncionarioCopedDto>>> listarEsperaCadastroCoped() {
-    //     List<FuncionarioCoped> funcionarioCopeds = autenticacaoService.listarEsperaCadastroCoped();
+     @GetMapping("/espera-cadastro/coped")
+     public ResponseEntity<Response<List<FuncionarioCopedResponse>>> listarEsperaCadastroCoped() {
+         List<FuncionarioCoped> funcionarioCopeds = autenticacaoService.listarEsperaCadastroCoped();
 
-    //     List<FuncionarioCopedDto> dtos = modelMapperService.convertToList(funcionarioCopeds, FuncionarioCopedDto.class);
+         List<FuncionarioCopedResponse> dtos = modelMapperService.convert(funcionarioCopeds, FuncionarioCopedResponse.class);
 
-    //     return responseService.ok(funcionarioCopeds);
-    // }
+         return responseService.ok(dtos);
+     }
 
-    // @GetMapping("/espera-cadastro/professor")
-    // public ResponseEntity<Response<List<ProfessorDto>>> listarEsperaCadastroProfessor() {
-    //     List<Professor> professors = autenticacaoService.listarEsperaCadastroProfessor();
+     @GetMapping("/espera-cadastro/professor")
+     public ResponseEntity<Response<List<ProfessorResponse>>> listarEsperaCadastroProfessor() {
+         List<Professor> professors = autenticacaoService.listarEsperaCadastroProfessor();
 
-    //     return responseService.ok(professors);
-    // }
+         List<ProfessorResponse> dtos = modelMapperService.convert(professors, ProfessorResponse.class);
+         return responseService.ok(dtos);
+     }
 }
