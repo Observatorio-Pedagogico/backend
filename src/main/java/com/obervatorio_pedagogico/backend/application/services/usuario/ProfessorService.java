@@ -53,4 +53,16 @@ public class ProfessorService {
         professorOp.get().setEsperaCadastro(false);
         return salvar(professorOp.get());
     }
+
+    public Professor desativarProfessor(Long id) {
+        Optional<Professor> professorOp = buscarPorId(id);
+
+        if (!professorOp.isPresent()) {
+            throw new NaoEncontradoException();
+        }
+
+        professorOp.get().setAtivo(false);
+        professorOp.get().setEsperaCadastro(false);
+        return salvar(professorOp.get());
+    }
 }

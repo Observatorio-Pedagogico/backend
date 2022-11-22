@@ -50,6 +50,18 @@ public class FuncionarioCopedService {
         return salvar(funcionarioCoped.get());
     }
 
+    public FuncionarioCoped desativarFuncionarioCoped(Long id) {
+        Optional<FuncionarioCoped> funcionarioCoped = buscarPorId(id);
+
+        if (!funcionarioCoped.isPresent()) {
+            throw new NaoEncontradoException();
+        }
+
+        funcionarioCoped.get().setAtivo(false);
+        funcionarioCoped.get().setEsperaCadastro(false);
+        return salvar(funcionarioCoped.get());
+    }
+
     public Page<FuncionarioCoped> listarEsperaCadastro(Pageable pageable) {
         return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue(pageable);
     }

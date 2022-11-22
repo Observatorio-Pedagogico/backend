@@ -66,9 +66,27 @@ public class AutenticationController {
         return responseService.ok(dto);
     }
 
+    @PostMapping("/espera-cadastro/coped/desativar/{id}")
+    public ResponseEntity<Response<FuncionarioCopedResponse>> desativarFuncionarioCoped(@PathVariable Long id) {
+        FuncionarioCoped funcionarioCoped = autenticacaoService.desativarFuncionarioCoped(id);
+
+        FuncionarioCopedResponse dto = modelMapperService.convert(funcionarioCoped, FuncionarioCopedResponse.class);
+        
+        return responseService.ok(dto);
+    }
+
     @PostMapping("/espera-cadastro/professor/ativar/{id}")
     public ResponseEntity<Response<ProfessorResponse>> ativarProfessor(@PathVariable Long id) {
         Professor professor = autenticacaoService.ativarProfessor(id);
+
+        ProfessorResponse dto = modelMapperService.convert(professor, ProfessorResponse.class);
+        
+        return responseService.ok(dto);
+    }
+
+    @PostMapping("/espera-cadastro/professor/desativar/{id}")
+    public ResponseEntity<Response<ProfessorResponse>> desativarProfessor(@PathVariable Long id) {
+        Professor professor = autenticacaoService.desativarProfessor(id);
 
         ProfessorResponse dto = modelMapperService.convert(professor, ProfessorResponse.class);
         

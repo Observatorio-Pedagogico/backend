@@ -129,8 +129,16 @@ public class AutenticacaoService {
         return funcionarioCopedService.ativarFuncionarioCoped(id);
     }
 
+    public FuncionarioCoped desativarFuncionarioCoped(Long id) {
+        return funcionarioCopedService.desativarFuncionarioCoped(id);
+    }
+
     public Professor ativarProfessor(Long id) {
         return professorService.ativarProfessor(id);
+    }
+
+    public Professor desativarProfessor(Long id) {
+        return professorService.desativarProfessor(id);
     }
 
     public Page<FuncionarioCoped> listarEsperaCadastroCoped(Pageable pageable) {
