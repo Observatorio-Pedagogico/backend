@@ -18,4 +18,7 @@ public interface FuncionarioCopedRepository extends JpaRepository<FuncionarioCop
 
     @Query(value = "SELECT * FROM t_funcionario_coped coped WHERE coped.espera_cadastro = true", nativeQuery = true)
     public Page<FuncionarioCoped> findFuncionarioCopedWhereEsperaCadastroTrue(Pageable pageable);
+
+    @Query(value = "SELECT * FROM t_funcionario_coped coped WHERE coped.espera_cadastro = false", nativeQuery = true)
+    public Page<FuncionarioCoped> findFuncionarioCopedWhereEsperaCadastroFalse(Pageable pageable);
 }

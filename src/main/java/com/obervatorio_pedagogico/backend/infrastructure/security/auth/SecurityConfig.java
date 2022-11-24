@@ -71,8 +71,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     public void configure(WebSecurity web) throws Exception {
         web.ignoring()
-        .antMatchers("/observatorio-pedagogico/api/login")
-        .antMatchers("/observatorio-pedagogico/api/login/cadastrar");
+        .antMatchers("/observatorio-pedagogico/api/autenticacao/login")
+        .antMatchers("/observatorio-pedagogico/api/autenticacao/cadastrar");
     }
 
     @Bean

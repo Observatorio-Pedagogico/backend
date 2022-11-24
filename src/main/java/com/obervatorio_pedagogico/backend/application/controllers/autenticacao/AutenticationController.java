@@ -30,7 +30,7 @@ import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping("/observatorio-pedagogico/api/login")
+@RequestMapping("/observatorio-pedagogico/api/autenticacao")
 @AllArgsConstructor
 @CrossOrigin
 public class AutenticationController {
@@ -41,7 +41,7 @@ public class AutenticationController {
 
     private ModelMapperService modelMapperService;
 
-    @PostMapping
+    @PostMapping("/login")
     public ResponseEntity<Response<AuthResponse>> login(@RequestBody @Valid LoginRequest authRequest) {
         AuthResponse authResponse = autenticacaoService.login(authRequest);
 
@@ -58,8 +58,8 @@ public class AutenticationController {
     }
 
     @PostMapping("/espera-cadastro/coped/ativar/{id}")
-    public ResponseEntity<Response<FuncionarioCopedResponse>> ativarFuncionarioCoped(@PathVariable Long id) {
-        FuncionarioCoped funcionarioCoped = autenticacaoService.ativarFuncionarioCoped(id);
+    public ResponseEntity<Response<FuncionarioCopedResponse>> ativarFuncionarioCopedEsperaCadastro(@PathVariable Long id) {
+        FuncionarioCoped funcionarioCoped = autenticacaoService.ativarFuncionarioCopedEsperaCadastro(id);
 
         FuncionarioCopedResponse dto = modelMapperService.convert(funcionarioCoped, FuncionarioCopedResponse.class);
         
@@ -67,8 +67,8 @@ public class AutenticationController {
     }
 
     @PostMapping("/espera-cadastro/coped/desativar/{id}")
-    public ResponseEntity<Response<FuncionarioCopedResponse>> desativarFuncionarioCoped(@PathVariable Long id) {
-        FuncionarioCoped funcionarioCoped = autenticacaoService.desativarFuncionarioCoped(id);
+    public ResponseEntity<Response<FuncionarioCopedResponse>> desativarFuncionarioCopedEsperaCadastro(@PathVariable Long id) {
+        FuncionarioCoped funcionarioCoped = autenticacaoService.desativarFuncionarioCopedEsperaCadastro(id);
 
         FuncionarioCopedResponse dto = modelMapperService.convert(funcionarioCoped, FuncionarioCopedResponse.class);
         
@@ -76,8 +76,8 @@ public class AutenticationController {
     }
 
     @PostMapping("/espera-cadastro/professor/ativar/{id}")
-    public ResponseEntity<Response<ProfessorResponse>> ativarProfessor(@PathVariable Long id) {
-        Professor professor = autenticacaoService.ativarProfessor(id);
+    public ResponseEntity<Response<ProfessorResponse>> ativarProfessorEsperaCadastro(@PathVariable Long id) {
+        Professor professor = autenticacaoService.ativarProfessorEsperaCadastro(id);
 
         ProfessorResponse dto = modelMapperService.convert(professor, ProfessorResponse.class);
         
@@ -85,8 +85,8 @@ public class AutenticationController {
     }
 
     @PostMapping("/espera-cadastro/professor/desativar/{id}")
-    public ResponseEntity<Response<ProfessorResponse>> desativarProfessor(@PathVariable Long id) {
-        Professor professor = autenticacaoService.desativarProfessor(id);
+    public ResponseEntity<Response<ProfessorResponse>> desativarProfessorEsperaCadastro(@PathVariable Long id) {
+        Professor professor = autenticacaoService.desativarProfessorEsperaCadastro(id);
 
         ProfessorResponse dto = modelMapperService.convert(professor, ProfessorResponse.class);
         
@@ -95,14 +95,28 @@ public class AutenticationController {
 
     @GetMapping("/espera-cadastro/coped")
     public ResponseEntity<Response<Page<FuncionarioCopedResponse>>> listarEsperaCadastroCoped(Pageable pageable) {
-        Page<FuncionarioCoped> funcionarioCopeds = autenticacaoService.listarEsperaCadastroCoped(pageable);
+        Page<FuncionarioCoped> funcionarioCopeds = autenticacaoService.listarCopedEsperaCadastro(pageable);
 
         return responseService.ok(modelMapperService.convert(funcionarioCopeds, FuncionarioCopedResponse.class));
     }
 
     @GetMapping("/espera-cadastro/professor")
     public ResponseEntity<Response<Page<ProfessorResponse>>> listarEsperaCadastroProfessor(Pageable pageable) {
-        Page<Professor> professors = autenticacaoService.listarEsperaCadastroProfessor(pageable);
+        Page<Professor> professors = autenticacaoService.listarProfessorEsperaCadastro(pageable);
+
+        return responseService.ok(modelMapperService.convert(professors, ProfessorResponse.class));
+    }
+
+    @GetMapping("/coped")
+    public ResponseEntity<Response<Page<FuncionarioCopedResponse>>> listarCoped(Pageable pageable) {
+        Page<FuncionarioCoped> funcionarioCopeds = autenticacaoService.listarCoped(pageable);
+
+        return responseService.ok(modelMapperService.convert(funcionarioCopeds, FuncionarioCopedResponse.class));
+    }
+
+    @GetMapping("/professor")
+    public ResponseEntity<Response<Page<ProfessorResponse>>> listarProfessor(Pageable pageable) {
+        Page<Professor> professors = autenticacaoService.listarProfessor(pageable);
 
         return responseService.ok(modelMapperService.convert(professors, ProfessorResponse.class));
     }

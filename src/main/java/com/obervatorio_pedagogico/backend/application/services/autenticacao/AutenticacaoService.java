@@ -125,6 +125,30 @@ public class AutenticacaoService {
         }
     }
 
+    public FuncionarioCoped ativarFuncionarioCopedEsperaCadastro(Long id) {
+        return funcionarioCopedService.ativarFuncionarioCopedEsperaCadastro(id);
+    }
+
+    public FuncionarioCoped desativarFuncionarioCopedEsperaCadastro(Long id) {
+        return funcionarioCopedService.desativarFuncionarioCopedEsperaCadastro(id);
+    }
+
+    public Professor ativarProfessorEsperaCadastro(Long id) {
+        return professorService.ativarProfessorEsperaCadastro(id);
+    }
+
+    public Professor desativarProfessorEsperaCadastro(Long id) {
+        return professorService.desativarProfessorEsperaCadastro(id);
+    }
+
+    public Page<FuncionarioCoped> listarCopedEsperaCadastro(Pageable pageable) {
+        return funcionarioCopedService.listarEsperaCadastro(pageable);
+    }
+
+    public Page<Professor> listarProfessorEsperaCadastro(Pageable pageable) {
+        return professorService.listarEsperaCadastro(pageable);
+    }
+
     public FuncionarioCoped ativarFuncionarioCoped(Long id) {
         return funcionarioCopedService.ativarFuncionarioCoped(id);
     }
@@ -141,12 +165,12 @@ public class AutenticacaoService {
         return professorService.desativarProfessor(id);
     }
 
-    public Page<FuncionarioCoped> listarEsperaCadastroCoped(Pageable pageable) {
-        return funcionarioCopedService.listarEsperaCadastro(pageable);
+    public Page<FuncionarioCoped> listarCoped(Pageable pageable) {
+        return funcionarioCopedService.listar(pageable);
     }
 
-    public Page<Professor> listarEsperaCadastroProfessor(Pageable pageable) {
-        return professorService.listarEsperaCadastro(pageable);
+    public Page<Professor> listarProfessor(Pageable pageable) {
+        return professorService.listar(pageable);
     }
 
     private void validarCadastro(CadastroUsuarioRequest cadastroUsuarioDto) {

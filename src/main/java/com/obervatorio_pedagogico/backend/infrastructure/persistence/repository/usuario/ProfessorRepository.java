@@ -18,4 +18,7 @@ public interface ProfessorRepository extends JpaRepository<Professor, Long> {
 
     @Query(value = "SELECT * FROM t_professor coped WHERE coped.espera_cadastro = true", nativeQuery = true)
     public Page<Professor> findProfessorWhereEsperaCadastroTrue(Pageable pageable);
+
+    @Query(value = "SELECT * FROM t_professor coped WHERE coped.espera_cadastro = false", nativeQuery = true)
+    public Page<Professor> findProfessorWhereEsperaCadastroFalse(Pageable pageable);
 }

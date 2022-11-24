@@ -42,6 +42,24 @@ public class ProfessorService {
         return ProfessorRepository.findProfessorWhereEsperaCadastroTrue(pageable);
     }
 
+    public Page<Professor> listar(Pageable pageable) {
+        return ProfessorRepository.findProfessorWhereEsperaCadastroFalse(pageable);
+    }
+
+    public Professor ativarProfessorEsperaCadastro(Long id) {
+        Professor professor = ativarProfessor(id);
+        professor.setEsperaCadastro(false);
+
+        return salvar(professor);
+    }
+
+    public Professor desativarProfessorEsperaCadastro(Long id) {
+        Professor professor = desativarProfessor(id);
+        professor.setEsperaCadastro(false);
+
+        return salvar(professor);
+    }
+    
     public Professor ativarProfessor(Long id) {
         Optional<Professor> professorOp = buscarPorId(id);
 
@@ -50,7 +68,6 @@ public class ProfessorService {
         }
 
         professorOp.get().setAtivo(true);
-        professorOp.get().setEsperaCadastro(false);
         return salvar(professorOp.get());
     }
 

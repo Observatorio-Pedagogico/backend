@@ -38,6 +38,20 @@ public class FuncionarioCopedService {
         return funcionarioCopedRepository.count();
     }
 
+    public FuncionarioCoped ativarFuncionarioCopedEsperaCadastro(Long id) {
+        FuncionarioCoped funcionarioCoped = ativarFuncionarioCoped(id);
+        funcionarioCoped.setEsperaCadastro(false);
+
+        return salvar(funcionarioCoped);
+    }
+
+    public FuncionarioCoped desativarFuncionarioCopedEsperaCadastro(Long id) {
+        FuncionarioCoped funcionarioCoped = desativarFuncionarioCoped(id);
+        funcionarioCoped.setEsperaCadastro(false);
+
+        return salvar(funcionarioCoped);
+    }
+
     public FuncionarioCoped ativarFuncionarioCoped(Long id) {
         Optional<FuncionarioCoped> funcionarioCoped = buscarPorId(id);
 
@@ -46,7 +60,6 @@ public class FuncionarioCopedService {
         }
 
         funcionarioCoped.get().setAtivo(true);
-        funcionarioCoped.get().setEsperaCadastro(false);
         return salvar(funcionarioCoped.get());
     }
 
@@ -58,11 +71,14 @@ public class FuncionarioCopedService {
         }
 
         funcionarioCoped.get().setAtivo(false);
-        funcionarioCoped.get().setEsperaCadastro(false);
         return salvar(funcionarioCoped.get());
     }
 
     public Page<FuncionarioCoped> listarEsperaCadastro(Pageable pageable) {
         return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue(pageable);
+    }
+
+    public Page<FuncionarioCoped> listar(Pageable pageable) {
+        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroFalse(pageable);
     }
 }
