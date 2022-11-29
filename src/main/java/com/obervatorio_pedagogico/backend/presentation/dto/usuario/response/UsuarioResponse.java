@@ -21,4 +21,6 @@ public class UsuarioResponse {
     private String nome;
 
     private Sexo sexo;
+
+    private Boolean ativo;
 }
