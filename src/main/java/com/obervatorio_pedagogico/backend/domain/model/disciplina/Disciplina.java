@@ -23,6 +23,7 @@ import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.Freque
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 
 import lombok.AllArgsConstructor;
@@ -84,6 +85,10 @@ public class Disciplina implements Serializable {
     @ManyToMany(fetch = FetchType.LAZY,
     mappedBy = "disciplinas")
     private List<Extracao> extracoes = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,
+    mappedBy = "disciplinas")
+    private List<Professor> professores = new ArrayList<>();
 
     public boolean addExtracao(Extracao extracao) {
         if(!hasExtracao(extracao)) {

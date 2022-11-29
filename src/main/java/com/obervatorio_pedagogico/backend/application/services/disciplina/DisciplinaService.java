@@ -41,6 +41,16 @@ public class DisciplinaService {
         return listaDisciplinaSalvas;
     }
 
+    public List<Disciplina> buscarPorCodigo(String codigo) {
+        List<Disciplina> disciplinas = disciplinaRepository.findDisciplinaByCodigo(codigo);
+        return disciplinas;
+    }
+
+    public List<Disciplina> buscarPorCodigo(List<String> codigos) {
+        List<Disciplina> disciplinas = disciplinaRepository.findDisciplinaByCodigo(codigos);
+        return disciplinas;
+    }
+
     public Optional<Disciplina> buscarPorCodigoEPeriodoLetivo(String codigo, String periodoLetivo) {
         Optional<Disciplina> disciplinaSalvaOp = disciplinaRepository.findDisciplinaByCodigoAndPeriodoLetivo(codigo, periodoLetivo);
         return disciplinaSalvaOp;
