@@ -22,6 +22,6 @@ public interface DisciplinaRepository extends JpaRepository<Disciplina, Long>, Q
     @Query(value = "select * from t_disciplina disciplina where disciplina.codigo in :codigos", nativeQuery = true)
     public List<Disciplina> findDisciplinaByCodigo(@Param("codigos") List<String> codigos);
 
-    @Query(value = "select distinct on (td.codigo) td.* from t_disciplina td", nativeQuery = true)
+    @Query(value = "select distinct on (disciplina.codigo) disciplina.* from t_disciplina disciplina", nativeQuery = true)
     public List<Disciplina> findDisciplinaIgnorePeriodo();
 }
