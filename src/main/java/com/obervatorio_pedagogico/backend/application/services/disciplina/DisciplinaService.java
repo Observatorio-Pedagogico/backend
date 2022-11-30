@@ -83,6 +83,10 @@ public class DisciplinaService {
         return disciplinas;
     }
 
+    public List<Disciplina> buscarIgnorandoPeriodos() {
+        return disciplinaRepository.findDisciplinaIgnorePeriodo();
+    }
+
     public List<String> buscarListaPeriodos(Predicate predicate) {
         Set<String> legendaPeriodoLetivos = new LinkedHashSet<>();
         List<Disciplina> disciplinas = StreamSupport.stream(this.disciplinaRepository.findAll(predicate, Sort.by(Sort.Direction.ASC, "periodoLetivo")).spliterator(), false)

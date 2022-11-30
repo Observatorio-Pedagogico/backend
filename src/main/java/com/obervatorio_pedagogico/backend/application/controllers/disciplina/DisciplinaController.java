@@ -46,6 +46,13 @@ public class DisciplinaController {
         return responseService.ok(modelMapperService.convert(disciplinas, DisciplinaResumidoResponse.class));
     }
 
+    @GetMapping("/resumido/ignorar-periodos")
+    public ResponseEntity<Response<List<DisciplinaResumidoResponse>>> buscarDisciplinasResumidoIgnorandoPeriodo() {
+        List<Disciplina> disciplinas = disciplinaService.buscarIgnorandoPeriodos();
+
+        return responseService.ok(modelMapperService.convert(disciplinas, DisciplinaResumidoResponse.class));
+    }
+
     @GetMapping
     public ResponseEntity<Response<Page<DisciplinaResponse>>> buscarDisciplinas(Pageable pageable, DisciplinaBuscaRequest disciplinaBuscaRequest) {
         BooleanExpression predicate = predicatesGenerator.add(disciplinaBuscaRequest).build();
