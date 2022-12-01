@@ -72,4 +72,21 @@ context('Login de Usuario Test', () => {
             expect(response.status).to.equal(200)
         })
     });
+
+    it('Login usuario com sucesso', () => {
+        cy.request({
+            method: 'POST',
+            url: "/login",
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: { 
+                email: "thauan.amorim@academico.ifpb.edu.br", 
+                senha: "123456", 
+            },
+            log: true,
+        }).then(function(response){
+            expect(response.status).to.equal(200)
+        })
+    });
 });

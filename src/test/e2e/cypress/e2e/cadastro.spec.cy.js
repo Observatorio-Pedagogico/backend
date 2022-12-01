@@ -144,7 +144,7 @@ context('Cadastro de Usuario Test', () => {
                 'Content-Type': 'application/json'
             },
             body: { 
-                matricula: "201915020009", 
+                matricula: "201915000002", 
                 email: "thauan.amorim@academico.ifpb.edu.br", 
                 senha: "123456", 
                 nome: "Thauan Amorim", 
