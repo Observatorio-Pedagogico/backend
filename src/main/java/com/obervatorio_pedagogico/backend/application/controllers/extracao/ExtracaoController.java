@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.obervatorio_pedagogico.backend.application.services.extracao.ExtracaoService;
 import com.obervatorio_pedagogico.backend.application.services.extracao.ExtracaoThreadService;
+import com.obervatorio_pedagogico.backend.application.services.usuario.FuncionarioService;
+import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.ExtracaoThread;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.buscaConstrutor.PredicatesGenerator;
@@ -28,6 +30,7 @@ import com.obervatorio_pedagogico.backend.presentation.dto.extracao.request.busc
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponse;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoResponseResumido;
 import com.obervatorio_pedagogico.backend.presentation.dto.extracao.response.ExtracaoThreadResponse;
+import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 import com.obervatorio_pedagogico.backend.presentation.shared.Response;
 
 import lombok.AllArgsConstructor;
@@ -39,14 +42,11 @@ import lombok.AllArgsConstructor;
 public class ExtracaoController {
 
     private ExtracaoService extracaoService;
-
     private ExtracaoThreadService extracaoThreadService;
-
     private ModelMapperService modelMapperService;
-
     private ResponseService responseService;
-
     private PredicatesGenerator predicatesGenerator;
+    private FuncionarioService funcionarioService;
     
     @PostMapping("/enviar")
     public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest, Principal principal) {
@@ -66,7 +66,7 @@ public class ExtracaoController {
     }
 
     @GetMapping("/envio-status/{id}")
-    public ResponseEntity<Response<ExtracaoThreadResponse>> getEnvioStatus(@PathVariable Long id){
+    public ResponseEntity<Response<ExtracaoThreadResponse>> getEnvioStatus(@PathVariable Long id) {
         ExtracaoThread extracaoThread = extracaoThreadService.getById(id);
 
         ExtracaoThreadResponse response = modelMapperService.convert(extracaoThread, ExtracaoThreadResponse.class);
@@ -75,7 +75,7 @@ public class ExtracaoController {
     }
 
     @GetMapping("/envio-status")
-    public ResponseEntity<Response<List<ExtracaoThreadResponse>>> getEnvioStatus(){
+    public ResponseEntity<Response<List<ExtracaoThreadResponse>>> getEnvioStatus() {
         List<ExtracaoThread> extracaoThreadList = extracaoThreadService.getAll();
 
         List<ExtracaoThreadResponse> responseList = new ArrayList<>();
@@ -85,7 +85,10 @@ public class ExtracaoController {
     }
 
     @GetMapping()
-    public ResponseEntity<Response<Page<ExtracaoResponseResumido>>> getTodos(Pageable pageable, ExtracaoBuscaRequest extracaoBuscaRequest){
+    public ResponseEntity<Response<Page<ExtracaoResponseResumido>>> getTodos(Pageable pageable, ExtracaoBuscaRequest extracaoBuscaRequest, Principal principal) {
+        EnvelopeFuncionario envelopeFuncionario = funcionarioService.buscarFuncionarioPorEmail(principal.getName()).orElseThrow(() -> new NaoEncontradoException());
+
+        if (envelopeFuncionario.isProfessor()) extracaoBuscaRequest.setIdProfessor(envelopeFuncionario.getFuncionario().getId());
         BooleanExpression predicate = predicatesGenerator.add(extracaoBuscaRequest).build();
         Page<Extracao> extracaoPagina = extracaoService.getTodos(pageable, predicate);
         

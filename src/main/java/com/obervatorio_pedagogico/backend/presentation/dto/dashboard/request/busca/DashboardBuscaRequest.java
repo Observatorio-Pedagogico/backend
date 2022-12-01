@@ -28,5 +28,8 @@ public class DashboardBuscaRequest {
     @SearchParam(property = "codigo",  operation = Operation.EQUALS)
     private List<String> codigo;
 
+    @SearchParam(property = "professores.id",  operation = Operation.EQUALS)
+    private Long idProfessor;
+
     private Boolean ignorarAusencia = false;
 }

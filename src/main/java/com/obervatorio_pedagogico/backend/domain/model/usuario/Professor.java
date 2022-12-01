@@ -9,10 +9,12 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.JoinColumn;
 
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
+import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -24,6 +26,13 @@ import lombok.NoArgsConstructor;
 @Entity
 @Table(name = "t_professor")
 public class Professor extends Funcionario {
+
+    @OneToMany(
+        mappedBy = "professorRemetente", 
+        cascade = CascadeType.ALL,
+        orphanRemoval = true
+    )
+    private List<Extracao> extracoes = new ArrayList<>();
     
     @ManyToMany(fetch = FetchType.LAZY,
     cascade = {

@@ -30,4 +30,7 @@ public class ExtracaoBuscaRequest {
     
     @SearchParam(property = "status",  operation = Operation.EQUALS)
     private List<Status> status;
+
+    @SearchParam(property = "professorRemetente.id",  operation = Operation.EQUALS)
+    private Long idProfessor;
 }
