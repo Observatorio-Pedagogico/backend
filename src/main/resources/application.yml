@@ -12,8 +12,8 @@ spring:
           merge:
             entity_copy_observer: allow
     hibernate:
-       ddl_auto: create-drop
-    #  ddl_auto: update
+#       ddl_auto: create-drop
+      ddl_auto: update
 
   datasource:
     url: jdbc:postgresql://localhost:5431/db-api

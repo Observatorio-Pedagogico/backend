@@ -1,20 +1,18 @@
 package com.obervatorio_pedagogico.backend.application.services.usuario;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.stereotype.Service;
-
 import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.exceptions.OperacaoInvalidaException;
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.usuario.ProfessorRepository;
-
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
@@ -36,14 +34,14 @@ public class ProfessorService {
         return ProfessorRepository.findProfessorByEmail(email);
     }
 
-    public Optional<Professor> buscarPorId(Long id) {
-        return ProfessorRepository.findById(id);
+    public Professor buscarPorId(Long id) {
+        return ProfessorRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("ID professor"));
     }
 
     public void adicionarDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
         if (codigosDisciplinas.isEmpty()) throw new OperacaoInvalidaException("codigosDisciplinas não informado");
 
-        Professor professor = buscarPorId(idProfessor).orElseThrow(() -> new NaoEncontradoException("Id professor"));
+        Professor professor = buscarPorId(idProfessor);
         List<Disciplina> disciplinas = disciplinaService.buscarPorCodigo(codigosDisciplinas);
 
         disciplinas.stream().forEach(disciplina -> professor.addDisciplina(disciplina));
@@ -53,7 +51,7 @@ public class ProfessorService {
     public void removerDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
         if (codigosDisciplinas.isEmpty()) throw new OperacaoInvalidaException("codigosDisciplinas não informado");
 
-        Professor professor = buscarPorId(idProfessor).orElseThrow(() -> new NaoEncontradoException("Id professor"));
+        Professor professor = buscarPorId(idProfessor);
         List<Disciplina> disciplinas = disciplinaService.buscarPorCodigo(codigosDisciplinas);
 
         disciplinas.stream().forEach(disciplina -> professor.removeDisciplina(disciplina));
@@ -87,25 +85,17 @@ public class ProfessorService {
     }
     
     public Professor ativarProfessor(Long id) {
-        Optional<Professor> professorOp = buscarPorId(id);
+        Professor professor = buscarPorId(id);
 
-        if (!professorOp.isPresent()) {
-            throw new NaoEncontradoException();
-        }
-
-        professorOp.get().setAtivo(true);
-        return salvar(professorOp.get());
+        professor.setAtivo(true);
+        return salvar(professor);
     }
 
     public Professor desativarProfessor(Long id) {
-        Optional<Professor> professorOp = buscarPorId(id);
+        Professor professor = buscarPorId(id);
 
-        if (!professorOp.isPresent()) {
-            throw new NaoEncontradoException();
-        }
-
-        professorOp.get().setAtivo(false);
-        professorOp.get().setEsperaCadastro(false);
-        return salvar(professorOp.get());
+        professor.setAtivo(false);
+        professor.setEsperaCadastro(false);
+        return salvar(professor);
     }
 }
