@@ -38,7 +38,7 @@ public class ProfessorService {
         return ProfessorRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("ID professor"));
     }
 
-    public void adicionarDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
+    public synchronized void adicionarDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
         if (codigosDisciplinas.isEmpty()) throw new OperacaoInvalidaException("codigosDisciplinas não informado");
 
         Professor professor = buscarPorId(idProfessor);
@@ -48,7 +48,7 @@ public class ProfessorService {
         salvar(professor);
     }
 
-    public void removerDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
+    public synchronized void removerDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
         if (codigosDisciplinas.isEmpty()) throw new OperacaoInvalidaException("codigosDisciplinas não informado");
 
         Professor professor = buscarPorId(idProfessor);
