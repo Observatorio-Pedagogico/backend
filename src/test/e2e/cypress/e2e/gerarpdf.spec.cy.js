@@ -6,7 +6,7 @@ context('gera pdf test', () => {
     it('Loga o usuario', () => {
         cy.request({
             method: 'POST',
-            url: "/login",
+            url: "/autenticacao/login",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -15,6 +15,7 @@ context('gera pdf test', () => {
                 senha: "123456", 
             },
             log: true ,
+            failOnStatusCode: false
         }).then((response) => {
             expect(response.status).to.equal(200)
             token = response.body.data.token
@@ -48,6 +49,7 @@ context('gera pdf test', () => {
                 ]
             },
             log: true,
+            failOnStatusCode: false
         }).then(function(response){
             expect(response.status).to.equal(200)
             expect(response.body.data.conteudo).to.not.be.empty

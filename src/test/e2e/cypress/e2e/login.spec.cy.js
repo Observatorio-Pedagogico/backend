@@ -5,7 +5,7 @@ context('Login de Usuario Test', () => {
     it('Login email vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login",
+            url: "/autenticacao/login",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -23,7 +23,7 @@ context('Login de Usuario Test', () => {
     it('Login email fora instituicao', () => {
         cy.request({
             method: 'POST',
-            url: "/login",
+            url: "/autenticacao/login",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -41,7 +41,7 @@ context('Login de Usuario Test', () => {
     it('Login senha vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login",
+            url: "/autenticacao/login",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -59,7 +59,7 @@ context('Login de Usuario Test', () => {
     it('Login usuario com sucesso', () => {
         cy.request({
             method: 'POST',
-            url: "/login",
+            url: "/autenticacao/login",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -76,7 +76,7 @@ context('Login de Usuario Test', () => {
     it('Login usuario com sucesso', () => {
         cy.request({
             method: 'POST',
-            url: "/login",
+            url: "/autenticacao/login",
             headers: {
                 'Content-Type': 'application/json'
             },

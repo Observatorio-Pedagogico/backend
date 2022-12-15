@@ -45,6 +45,7 @@ class BackendApplicationTests {
             container.withSpec("cypress/e2e/sequenced-tests.cy.js");
             container.start();
             CypressTestResults testResults = container.getTestResults();
+            container.withAutoCleanReports(true);
 
             return convertToJUnitDynamicTests(testResults);
         }

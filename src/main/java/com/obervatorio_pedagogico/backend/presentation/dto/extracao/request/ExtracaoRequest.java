@@ -40,6 +40,8 @@ public class ExtracaoRequest implements Serializable {
 
     private LocalDateTime ultimaDataHoraAtualizacao;
 
+    @Valid
+    @Size(min = 2,max = 2)
     private List<MultipartFile> arquivosMultipartFile;
 
     private List<Arquivo> arquivos;

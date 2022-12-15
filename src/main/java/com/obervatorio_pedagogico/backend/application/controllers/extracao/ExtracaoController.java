@@ -4,6 +4,8 @@ import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.validation.Valid;
+
 import org.springframework.data.domain.Page;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import org.springframework.data.domain.Pageable;
@@ -49,7 +51,7 @@ public class ExtracaoController {
     private FuncionarioService funcionarioService;
     
     @PostMapping("/enviar")
-    public ResponseEntity<Response<ExtracaoResponse>> enviar(ExtracaoRequest extracaoRequest, Principal principal) {
+    public ResponseEntity<Response<ExtracaoResponse>> enviar(@Valid ExtracaoRequest extracaoRequest, Principal principal) {
         extracaoRequest.setEmailRemetente(principal.getName());
         extracaoService.adicionarNaFila(extracaoRequest);
         return responseService.create(null);

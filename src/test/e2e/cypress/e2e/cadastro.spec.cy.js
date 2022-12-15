@@ -4,7 +4,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra usuario matricula vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -19,7 +19,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra usuario email vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -34,7 +34,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra usuario email fora instituicao', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -49,7 +49,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra usuario senha vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -64,7 +64,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra um usuario nome vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -79,7 +79,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra um usuario sexo vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -94,7 +94,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra um usuario sexo qualquer outra coisa', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -109,7 +109,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra um usuario tipo vazio', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -124,7 +124,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastra um usuario tipo qualquer outra coisa', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },
@@ -139,7 +139,7 @@ context('Cadastro de Usuario Test', () => {
     it('cadastrar usuario com sucesso', () => {
         cy.request({
             method: 'POST',
-            url: "/login/cadastrar",
+            url: "/autenticacao/cadastrar",
             headers: {
                 'Content-Type': 'application/json'
             },

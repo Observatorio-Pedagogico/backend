@@ -1,0 +1,37 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+
+  jpa:
+    database: POSTGRESQL
+    properties:
+      hibernate:
+        show_sql: false
+        enable_lazy_load_no_trans: true
+        event:
+          merge:
+            entity_copy_observer: allow
+    hibernate:
+       ddl_auto: create-drop
+    #  ddl_auto: update
+
+  datasource:
+    url: jdbc:postgresql://localhost:5431/db-api
+    username: user
+    password: user
+    driverClassName: org.postgresql.Driver
+  
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+  
+  rabbitmq:
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 1
+    addresses: localhost:5672
+    username: user
+    password: user
