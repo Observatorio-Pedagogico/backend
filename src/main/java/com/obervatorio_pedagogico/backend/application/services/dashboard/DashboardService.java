@@ -1,18 +1,5 @@
 package com.obervatorio_pedagogico.backend.application.services.dashboard;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
-import org.springframework.data.domain.Sort;
-import org.springframework.stereotype.Service;
-
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.dashboard.ConjuntoDados;
@@ -22,8 +9,13 @@ import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.dashboard.DashboardRepository;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.disciplina.DisciplinaRepository;
 import com.querydsl.core.types.Predicate;
-
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Sort;
+import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.*;
 
 @AllArgsConstructor
 @Service
@@ -213,9 +205,12 @@ public class DashboardService {
 
     private void criarConjuntoDadosCalculandoMediaDoValor(Float valor, String periodo, String label, Map<String, ConjuntoDados> mapConjuntoDados, Set<String> legendaPeriodoLetivos) {
         ConjuntoDados conjuntoDados = mapConjuntoDados.get(label);
+        if(valor == null) valor = 0f;
+
         if (Objects.isNull(conjuntoDados)) {
             conjuntoDados = new ConjuntoDados();
             conjuntoDados.setLegenda(label);
+
             conjuntoDados.getDados().add(new BigDecimal(valor).setScale(2, RoundingMode.HALF_UP));
 
             mapConjuntoDados.put(label, conjuntoDados);
