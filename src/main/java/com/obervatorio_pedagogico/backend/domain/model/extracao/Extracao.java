@@ -19,7 +19,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.persistence.OneToOne;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
@@ -57,15 +57,12 @@ public class Extracao implements Serializable {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private Status status;
-
-    @Column(name = "periodo_letivo")
-    private String periodoLetivo;
     
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_funcionario_coped_remetente")
     private FuncionarioCoped funcionarioCopedRemetente;
 
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "id_professor_remetente")
     private Professor professorRemetente;
 
@@ -129,6 +126,7 @@ public class Extracao implements Serializable {
     public void iniciar() {
         this.setDataCadastro(LocalDateTime.now());
         this.setUltimaDataHoraAtualizacao(LocalDateTime.now());
+        this.setStatus(Status.PROCESSANDO);
     }
 
     public boolean isStatusAtiva() {
@@ -139,8 +137,16 @@ public class Extracao implements Serializable {
         return status.isCancelada();
     }
 
+    public boolean isProcessando() {
+        return this.status.isProcessando();
+    }
+
+    public boolean isErro() {
+        return this.status.isErro();
+    }
+
     public enum Status {
-        ATIVA, CANCELADA;
+        ATIVA, CANCELADA, PROCESSANDO, ERRO;
 
         public Boolean isAtiva() {
             return ATIVA.equals(this);
@@ -148,6 +154,14 @@ public class Extracao implements Serializable {
 
         public Boolean isCancelada() {
             return CANCELADA.equals(this);
+        }
+
+        public Boolean isProcessando() {
+            return PROCESSANDO.equals(this);
+        }
+
+        public Boolean isErro() {
+            return ERRO.equals(this);
         }
     }
 }

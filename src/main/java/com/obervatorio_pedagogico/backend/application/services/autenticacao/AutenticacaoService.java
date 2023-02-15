@@ -2,9 +2,10 @@ package com.obervatorio_pedagogico.backend.application.services.autenticacao;
 
 import java.io.UnsupportedEncodingException;
 import java.security.NoSuchAlgorithmException;
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -27,8 +28,8 @@ import com.obervatorio_pedagogico.backend.infrastructure.security.auth.SharUtils
 import com.obervatorio_pedagogico.backend.infrastructure.security.service.SecurityService;
 import com.obervatorio_pedagogico.backend.infrastructure.utils.modelMapper.ModelMapperService;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest;
-import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.CadastroUsuarioRequest.Tipo;
+import com.obervatorio_pedagogico.backend.presentation.dto.auth.request.LoginRequest;
 import com.obervatorio_pedagogico.backend.presentation.dto.auth.response.AuthResponse;
 import com.obervatorio_pedagogico.backend.presentation.model.usuario.EnvelopeFuncionario;
 
@@ -124,20 +125,52 @@ public class AutenticacaoService {
         }
     }
 
+    public FuncionarioCoped ativarFuncionarioCopedEsperaCadastro(Long id) {
+        return funcionarioCopedService.ativarFuncionarioCopedEsperaCadastro(id);
+    }
+
+    public FuncionarioCoped desativarFuncionarioCopedEsperaCadastro(Long id) {
+        return funcionarioCopedService.desativarFuncionarioCopedEsperaCadastro(id);
+    }
+
+    public Professor ativarProfessorEsperaCadastro(Long id) {
+        return professorService.ativarProfessorEsperaCadastro(id);
+    }
+
+    public Professor desativarProfessorEsperaCadastro(Long id) {
+        return professorService.desativarProfessorEsperaCadastro(id);
+    }
+
+    public Page<FuncionarioCoped> listarCopedEsperaCadastro(Pageable pageable) {
+        return funcionarioCopedService.listarEsperaCadastro(pageable);
+    }
+
+    public Page<Professor> listarProfessorEsperaCadastro(Pageable pageable) {
+        return professorService.listarEsperaCadastro(pageable);
+    }
+
     public FuncionarioCoped ativarFuncionarioCoped(Long id) {
         return funcionarioCopedService.ativarFuncionarioCoped(id);
+    }
+
+    public FuncionarioCoped desativarFuncionarioCoped(Long id) {
+        return funcionarioCopedService.desativarFuncionarioCoped(id);
     }
 
     public Professor ativarProfessor(Long id) {
         return professorService.ativarProfessor(id);
     }
 
-    public List<FuncionarioCoped> listarEsperaCadastroCoped() {
-        return funcionarioCopedService.listarEsperaCadastro();
+    public Professor desativarProfessor(Long id) {
+        return professorService.desativarProfessor(id);
     }
 
-    public List<Professor> listarEsperaCadastroProfessor() {
-        return professorService.listarEsperaCadastro();
+    public Page<FuncionarioCoped> listarCoped(Pageable pageable) {
+        return funcionarioCopedService.listar(pageable);
+    }
+
+    public Page<Professor> listarProfessor(Pageable pageable) {
+        return professorService.listar(pageable);
     }
 
     private void validarCadastro(CadastroUsuarioRequest cadastroUsuarioDto) {

@@ -30,8 +30,6 @@ public class ExtracaoResponse implements Serializable {
 
     private Status status;
 
-    private String periodoLetivo;
-    
     private LocalDateTime dataCadastro;
 
     private LocalDateTime ultimaDataHoraAtualizacao;

@@ -1,21 +1,26 @@
 package com.obervatorio_pedagogico.backend.application.services.usuario;
 
-import java.util.List;
-import java.util.Optional;
-
-import org.springframework.stereotype.Service;
-
+import com.obervatorio_pedagogico.backend.application.services.disciplina.DisciplinaService;
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
+import com.obervatorio_pedagogico.backend.domain.exceptions.OperacaoInvalidaException;
+import com.obervatorio_pedagogico.backend.domain.model.disciplina.Disciplina;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
 import com.obervatorio_pedagogico.backend.infrastructure.persistence.repository.usuario.ProfessorRepository;
-
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
 
 @Service
 @AllArgsConstructor
 public class ProfessorService {
 
     private ProfessorRepository ProfessorRepository;
+
+    private DisciplinaService disciplinaService;
 
     public Professor salvar(Professor professor) {
         return ProfessorRepository.save(professor);
@@ -29,27 +34,68 @@ public class ProfessorService {
         return ProfessorRepository.findProfessorByEmail(email);
     }
 
-    public Optional<Professor> buscarPorId(Long id) {
-        return ProfessorRepository.findById(id);
+    public Professor buscarPorId(Long id) {
+        return ProfessorRepository.findById(id).orElseThrow(() -> new NaoEncontradoException("ID professor"));
+    }
+
+    public synchronized void adicionarDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
+        if (codigosDisciplinas.isEmpty()) throw new OperacaoInvalidaException("codigosDisciplinas não informado");
+
+        Professor professor = buscarPorId(idProfessor);
+        List<Disciplina> disciplinas = disciplinaService.buscarPorCodigo(codigosDisciplinas);
+
+        disciplinas.stream().forEach(disciplina -> professor.addDisciplina(disciplina));
+        salvar(professor);
+    }
+
+    public synchronized void removerDisciplina(Long idProfessor, List<String> codigosDisciplinas) {
+        if (codigosDisciplinas.isEmpty()) throw new OperacaoInvalidaException("codigosDisciplinas não informado");
+
+        Professor professor = buscarPorId(idProfessor);
+        List<Disciplina> disciplinas = disciplinaService.buscarPorCodigo(codigosDisciplinas);
+
+        disciplinas.stream().forEach(disciplina -> professor.removeDisciplina(disciplina));
+        salvar(professor);
     }
 
     public long count() {
         return ProfessorRepository.count();
     }
 
-    public List<Professor> listarEsperaCadastro() {
-        return ProfessorRepository.findProfessorWhereEsperaCadastroTrue();
+    public Page<Professor> listarEsperaCadastro(Pageable pageable) {
+        return ProfessorRepository.findProfessorWhereEsperaCadastroTrue(pageable);
     }
 
+    public Page<Professor> listar(Pageable pageable) {
+        return ProfessorRepository.findProfessorWhereEsperaCadastroFalse(pageable);
+    }
+
+    public Professor ativarProfessorEsperaCadastro(Long id) {
+        Professor professor = ativarProfessor(id);
+        professor.setEsperaCadastro(false);
+
+        return salvar(professor);
+    }
+
+    public Professor desativarProfessorEsperaCadastro(Long id) {
+        Professor professor = desativarProfessor(id);
+        professor.setEsperaCadastro(false);
+
+        return salvar(professor);
+    }
+    
     public Professor ativarProfessor(Long id) {
-        Optional<Professor> professorOp = buscarPorId(id);
+        Professor professor = buscarPorId(id);
 
-        if (!professorOp.isPresent()) {
-            throw new NaoEncontradoException();
-        }
+        professor.setAtivo(true);
+        return salvar(professor);
+    }
 
-        professorOp.get().setAtivo(true);
-        professorOp.get().setEsperaCadastro(false);
-        return salvar(professorOp.get());
+    public Professor desativarProfessor(Long id) {
+        Professor professor = buscarPorId(id);
+
+        professor.setAtivo(false);
+        professor.setEsperaCadastro(false);
+        return salvar(professor);
     }
 }

@@ -1,8 +1,9 @@
 package com.obervatorio_pedagogico.backend.application.services.usuario;
 
-import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.obervatorio_pedagogico.backend.domain.exceptions.NaoEncontradoException;
@@ -37,6 +38,20 @@ public class FuncionarioCopedService {
         return funcionarioCopedRepository.count();
     }
 
+    public FuncionarioCoped ativarFuncionarioCopedEsperaCadastro(Long id) {
+        FuncionarioCoped funcionarioCoped = ativarFuncionarioCoped(id);
+        funcionarioCoped.setEsperaCadastro(false);
+
+        return salvar(funcionarioCoped);
+    }
+
+    public FuncionarioCoped desativarFuncionarioCopedEsperaCadastro(Long id) {
+        FuncionarioCoped funcionarioCoped = desativarFuncionarioCoped(id);
+        funcionarioCoped.setEsperaCadastro(false);
+
+        return salvar(funcionarioCoped);
+    }
+
     public FuncionarioCoped ativarFuncionarioCoped(Long id) {
         Optional<FuncionarioCoped> funcionarioCoped = buscarPorId(id);
 
@@ -45,11 +60,25 @@ public class FuncionarioCopedService {
         }
 
         funcionarioCoped.get().setAtivo(true);
-        funcionarioCoped.get().setEsperaCadastro(false);
         return salvar(funcionarioCoped.get());
     }
 
-    public List<FuncionarioCoped> listarEsperaCadastro() {
-        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue();
+    public FuncionarioCoped desativarFuncionarioCoped(Long id) {
+        Optional<FuncionarioCoped> funcionarioCoped = buscarPorId(id);
+
+        if (!funcionarioCoped.isPresent()) {
+            throw new NaoEncontradoException();
+        }
+
+        funcionarioCoped.get().setAtivo(false);
+        return salvar(funcionarioCoped.get());
+    }
+
+    public Page<FuncionarioCoped> listarEsperaCadastro(Pageable pageable) {
+        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroTrue(pageable);
+    }
+
+    public Page<FuncionarioCoped> listar(Pageable pageable) {
+        return funcionarioCopedRepository.findFuncionarioCopedWhereEsperaCadastroFalse(pageable);
     }
 }

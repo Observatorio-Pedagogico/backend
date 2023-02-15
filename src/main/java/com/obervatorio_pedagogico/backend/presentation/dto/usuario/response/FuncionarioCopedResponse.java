@@ -11,7 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @Getter
 @Setter
-public class FuncionarioCopedResponse extends FuncionarioResponse {
+public class FuncionarioCopedResponse extends UsuarioResponse {
 
     private TipoCargo cargo;
 }

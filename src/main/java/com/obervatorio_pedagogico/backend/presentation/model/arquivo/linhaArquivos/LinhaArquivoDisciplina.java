@@ -18,6 +18,7 @@ public class LinhaArquivoDisciplina {
     private Integer cargaHoraria;
     private Integer anoLetivo;
     private Integer periodoLetivo;
+    private String periodoMatriz;
     private Float media;
     private Integer frequencia;
     private String situacao;
@@ -35,6 +36,7 @@ public class LinhaArquivoDisciplina {
         this.cargaHoraria = NumberConverters.stringToInteger(row.getCell(6).getStringCellValue());
         this.anoLetivo = NumberConverters.stringToInteger(row.getCell(7).getStringCellValue());
         this.periodoLetivo = NumberConverters.stringToInteger(row.getCell(8).getStringCellValue());
+        this.periodoMatriz = row.getCell(3).getStringCellValue();
         this.media = NumberConverters.stringToFloat(row.getCell(9).getStringCellValue());
         this.frequencia = NumberConverters.stringToInteger(row.getCell(10).getStringCellValue());
         this.situacao = row.getCell(11).getStringCellValue();

@@ -30,7 +30,7 @@ public class ExtracaoBuscaRequest {
     
     @SearchParam(property = "status",  operation = Operation.EQUALS)
     private List<Status> status;
-    
-    @SearchParam(property = "periodoLetivo",  operation = Operation.EQUALS)
-    private List<String> periodoLetivo;
+
+    @SearchParam(property = "professorRemetente.id",  operation = Operation.EQUALS)
+    private Long idProfessor;
 }

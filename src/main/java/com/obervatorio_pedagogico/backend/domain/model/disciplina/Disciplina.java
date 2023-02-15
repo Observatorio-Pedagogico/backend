@@ -3,6 +3,7 @@ package com.obervatorio_pedagogico.backend.domain.model.disciplina;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.persistence.CascadeType;
@@ -19,8 +20,11 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao;
+import com.obervatorio_pedagogico.backend.domain.model.FrequenciaSituacao.FrequenciaSituacao.SituacaoDisciplina;
 import com.obervatorio_pedagogico.backend.domain.model.extracao.Extracao;
 import com.obervatorio_pedagogico.backend.domain.model.usuario.Aluno;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Professor;
+import com.obervatorio_pedagogico.backend.domain.model.usuario.Usuario.Sexo;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -47,6 +51,9 @@ public class Disciplina implements Serializable {
 
     @Column(name = "nome")
     private String nome;
+
+    @Column(name = "cargaHoraria")
+    private Integer cargaHoraria;
 
     @Column(name = "periodo_matriz")
     private String periodoMatriz;
@@ -78,6 +85,10 @@ public class Disciplina implements Serializable {
     @ManyToMany(fetch = FetchType.LAZY,
     mappedBy = "disciplinas")
     private List<Extracao> extracoes = new ArrayList<>();
+
+    @ManyToMany(fetch = FetchType.LAZY,
+    mappedBy = "disciplinas")
+    private List<Professor> professores = new ArrayList<>();
 
     public boolean addExtracao(Extracao extracao) {
         if(!hasExtracao(extracao)) {
@@ -126,10 +137,46 @@ public class Disciplina implements Serializable {
 
     public boolean hasExtracao(Extracao extracao) {
         return extracoes.stream().anyMatch(extrcaoFiltro -> (extrcaoFiltro.getTitulo().equals(extracao.getTitulo())) 
-            && extrcaoFiltro.getPeriodoLetivo().equals(extracao.getPeriodoLetivo()));
+            && extrcaoFiltro.getDescricao().equals(extracao.getDescricao()));
     }
 
     public boolean isPassivoDeletar() {
         return this.getExtracoes().isEmpty();
+    }
+
+    public SituacaoDisciplina obterFrequenciaSituacaoPorIdAluno(Long id) {
+        Optional<FrequenciaSituacao> frequenciaOpcional = getFrequenciaSituacoes().stream().filter(frequenciaSituacao -> frequenciaSituacao.getAluno().getId().equals(id)).findFirst();
+        
+        if (!frequenciaOpcional.isPresent()) return null;
+
+        return frequenciaOpcional.get().getSituacaoDisciplina();
+    }
+
+    public Integer getQuantidadeAlunosPorSexo(Sexo sexo, Boolean ignorarAusencia) {
+        return (int) getAlunos().stream().filter(aluno -> {
+            return (
+                !ignorarAusencia ||
+                (ignorarAusencia && !obterFrequenciaSituacaoPorIdAluno(aluno.getId()).isAusencia())
+            ) &&
+            aluno.getSexo().equals(sexo); 
+        }).count();
+    }
+
+    public Integer getQuantidadeAlunosPorSexo(Sexo sexo) {
+        return getQuantidadeAlunosPorSexo(sexo, false);
+    }
+
+    public Integer getQuantidadeAlunosPorSiatuacao(SituacaoDisciplina situacaoDisciplina) {
+        return (int) getFrequenciaSituacoes().stream().filter(situacao -> situacao.getSituacaoDisciplina().equals(situacaoDisciplina)).count();
+    }
+
+    public Integer getQuantidadeAlunos(Boolean ignorarAusencia) {
+        return (int) getAlunos().stream().filter(aluno -> !ignorarAusencia ||
+            (ignorarAusencia && !obterFrequenciaSituacaoPorIdAluno(aluno.getId()).isAusencia())
+        ).count();
+    }
+
+    public Integer getQuantidadeAlunos() {
+        return getQuantidadeAlunos(false);
     }
 }
